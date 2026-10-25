@@ -17,7 +17,7 @@ export function BookingList({
   if (bookings.length === 0) {
     return (
       <div className="rounded-2xl border border-dashed border-[var(--pt-line)] bg-white/70 px-4 py-10 text-center text-sm text-muted-foreground">
-        No bookings match. Try another filter or clear search.
+        No callers match. Try another filter or clear search.
       </div>
     );
   }
@@ -29,7 +29,7 @@ export function BookingList({
         const route =
           booking.from || booking.to
             ? `${booking.from || "?"} → ${booking.to || "?"}`
-            : "Route not set";
+            : "No route yet";
         return (
           <li key={booking.id}>
             <button
@@ -54,11 +54,14 @@ export function BookingList({
                   </div>
                   <p className="mt-1 text-sm text-muted-foreground">
                     {formatPhone(booking.phone)} · {route}
+                    {booking.passengers
+                      ? ` · ${booking.passengers} pax`
+                      : ""}
                   </p>
                 </div>
                 <div className="shrink-0 text-right text-sm">
                   <div className="font-medium text-[var(--pt-ink)]">
-                    {formatMoney(booking.quoteAmount)}
+                    {formatMoney(booking.price)}
                   </div>
                   <div className="text-muted-foreground">
                     {formatShortDate(booking.departDate)}

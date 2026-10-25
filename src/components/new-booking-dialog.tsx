@@ -30,6 +30,7 @@ export function NewBookingDialog({
   const [to, setTo] = useState("");
   const [departDate, setDepartDate] = useState("");
   const [returnDate, setReturnDate] = useState("");
+  const [passengers, setPassengers] = useState("1");
   const [notes, setNotes] = useState("");
   const [error, setError] = useState("");
 
@@ -40,13 +41,14 @@ export function NewBookingDialog({
     setTo("");
     setDepartDate("");
     setReturnDate("");
+    setPassengers("1");
     setNotes("");
     setError("");
   }
 
   function submit() {
     if (!customerName.trim() || !phone.trim()) {
-      setError("Name and phone are required so you can find this caller later.");
+      setError("Name and phone are required.");
       return;
     }
     onCreate({
@@ -56,9 +58,10 @@ export function NewBookingDialog({
       to: to.trim().toUpperCase(),
       departDate,
       returnDate,
+      passengers: passengers.trim() || "1",
       notes: notes.trim(),
-      nextAction: "Price options in Sabre Red and follow up on WhatsApp",
-      stage: "inquiry",
+      nextAction: "",
+      stage: "open",
     });
     reset();
   }
@@ -73,25 +76,23 @@ export function NewBookingDialog({
     >
       <DialogContent className="sm:max-w-lg" showCloseButton>
         <DialogHeader>
-          <DialogTitle className="font-display text-xl">
-            New WhatsApp / phone caller
-          </DialogTitle>
+          <DialogTitle className="font-display text-xl">New caller</DialogTitle>
           <DialogDescription>
-            Save contact info first — then add route details as you talk.
+            Just the basics — name, phone, and trip if you have it.
           </DialogDescription>
         </DialogHeader>
 
         <div className="grid gap-3">
-          <Field label="Customer name" htmlFor="nb-name">
+          <Field label="Name" htmlFor="nb-name">
             <Input
               id="nb-name"
               value={customerName}
               onChange={(e) => setCustomerName(e.target.value)}
-              placeholder="e.g. Layla Mansour"
+              placeholder="Layla Mansour"
               autoFocus
             />
           </Field>
-          <Field label="Phone / WhatsApp" htmlFor="nb-phone">
+          <Field label="Phone" htmlFor="nb-phone">
             <Input
               id="nb-phone"
               value={phone}
@@ -118,7 +119,7 @@ export function NewBookingDialog({
               />
             </Field>
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-3 gap-3">
             <Field label="Depart" htmlFor="nb-depart">
               <Input
                 id="nb-depart"
@@ -135,13 +136,20 @@ export function NewBookingDialog({
                 onChange={(e) => setReturnDate(e.target.value)}
               />
             </Field>
+            <Field label="Pax" htmlFor="nb-pax">
+              <Input
+                id="nb-pax"
+                value={passengers}
+                onChange={(e) => setPassengers(e.target.value)}
+              />
+            </Field>
           </div>
-          <Field label="Notes from the call" htmlFor="nb-notes">
+          <Field label="Notes" htmlFor="nb-notes">
             <Textarea
               id="nb-notes"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              placeholder="Language, flexible dates, family size…"
+              placeholder="Optional"
             />
           </Field>
           {error ? (
@@ -159,7 +167,7 @@ export function NewBookingDialog({
             onClick={submit}
             className="bg-[var(--pt-teal)] text-white hover:bg-[var(--pt-teal-deep)]"
           >
-            Save caller
+            Save
           </Button>
         </DialogFooter>
       </DialogContent>

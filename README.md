@@ -1,16 +1,15 @@
 # Princess Travel Desk
 
-A working web desk for **Princess Travel** (Amira Aboudeeb). Track WhatsApp/phone callers, Sabre quotes, traveler info, payment, and follow-ups — without relying on memory alone.
+A simple caller list for **Princess Travel** (Amira Aboudeeb). Save names, phones, trips, status, and what to do next. Sabre stays in Sabre — this is just organization.
 
-Works **alongside** Sabre Red (paste airline, class, and price by hand). No Sabre API.
+## What you can do
 
-## Features
+- Search by name or phone  
+- Add a new caller  
+- Set status: New → Working on it → Waiting for pay → Done → Needs help  
+- Note price, passengers, and a next step  
 
-- Search callers by name or phone number  
-- Filter by stage (Inquiry → Quoting → Travelers → Payment → Ticketed → Pre-travel → Support)  
-- Add a new caller during a call  
-- Edit booking details, travelers, checklist, and next action  
-- Data saves in the browser (localStorage)  
+Data saves in the browser on this device.
 
 ## Run locally
 
@@ -20,5 +19,3 @@ npm run dev -- --port 43141
 ```
 
 Open [http://127.0.0.1:43141](http://127.0.0.1:43141).
-
-Use **Reset sample data** to restore the demo bookings.

@@ -1,7 +1,7 @@
 import { SEED_BOOKINGS } from "@/lib/seed-data";
 import type { Booking } from "@/lib/types";
 
-export const STORAGE_KEY = "princess-travel-desk-v1";
+export const STORAGE_KEY = "princess-travel-desk-v2";
 
 export function loadBookings(): Booking[] {
   if (typeof window === "undefined") return SEED_BOOKINGS;
@@ -34,24 +34,13 @@ export function emptyBooking(partial?: Partial<Booking>): Booking {
     customerName: "",
     phone: "",
     email: "",
-    language: "Arabic",
     from: "",
     to: "",
     departDate: "",
     returnDate: "",
-    airline: "",
-    cabinClass: "",
-    quoteAmount: "",
-    tripType: "international",
-    paymentMethod: "unpaid",
-    stage: "inquiry",
-    travelers: [],
-    checklist: {
-      confirmationEmailed: false,
-      passportChecked: false,
-      visaChecked: false,
-      customerNotified: false,
-    },
+    passengers: "1",
+    price: "",
+    stage: "open",
     notes: "",
     nextAction: "",
     createdAt: now,
@@ -89,6 +78,5 @@ export function formatShortDate(value: string) {
   return d.toLocaleDateString("en-US", {
     month: "short",
     day: "numeric",
-    year: "numeric",
   });
 }
