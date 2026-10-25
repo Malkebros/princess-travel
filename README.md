@@ -1,16 +1,16 @@
-# Princess Travel — UI Design Preview
+# Princess Travel Desk
 
-Clickable UI design for **Princess Travel** (Amira Aboudeeb). Walk through the desk screens together; fill out the class worksheet separately on paper.
+A working web desk for **Princess Travel** (Amira Aboudeeb). Track WhatsApp/phone callers, Sabre quotes, traveler info, payment, and follow-ups — without relying on memory alone.
 
-## Screens
+Works **alongside** Sabre Red (paste airline, class, and price by hand). No Sabre API.
 
-1. Intro — who the app is for  
-2. Desk home — search, stages, booking list  
-3. New caller form  
-4. Booking detail (Sabre quote, travelers, checklist)  
-5. Find-by-phone demo  
+## Features
 
-Sample content mirrors the WhatsApp → Sabre → payment → pre-travel workflow. The desk works **alongside** Sabre Red (no Sabre API).
+- Search callers by name or phone number  
+- Filter by stage (Inquiry → Quoting → Travelers → Payment → Ticketed → Pre-travel → Support)  
+- Add a new caller during a call  
+- Edit booking details, travelers, checklist, and next action  
+- Data saves in the browser (localStorage)  
 
 ## Run locally
 
@@ -21,8 +21,4 @@ npm run dev -- --port 43141
 
 Open [http://127.0.0.1:43141](http://127.0.0.1:43141).
 
-## Review with Amira
-
-1. Open the link.  
-2. Use **Next screen** and the left “Say this to Amira” notes.  
-3. Write her feedback and sign-off on the **UI Design Worksheet** (not in this site).
+Use **Reset sample data** to restore the demo bookings.

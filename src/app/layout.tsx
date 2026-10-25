@@ -13,9 +13,9 @@ const fraunces = Fraunces({
 });
 
 export const metadata: Metadata = {
-  title: "Princess Travel · Desk design preview",
+  title: "Princess Travel Desk",
   description:
-    "Clickable UI design for Amira Aboudeeb’s Princess Travel caller and booking desk.",
+    "Caller and booking tracker for Amira Aboudeeb’s Princess Travel — search by phone, track Sabre quotes, payments, and follow-ups.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

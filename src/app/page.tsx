@@ -1,5 +1,5 @@
-import { UiDesignWalkthrough } from "@/components/ui-design-walkthrough";
+import { DeskApp } from "@/components/desk-app";
 
 export default function Home() {
-  return <UiDesignWalkthrough />;
+  return <DeskApp />;
 }
