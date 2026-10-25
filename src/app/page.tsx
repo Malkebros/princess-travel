@@ -1,5 +1,5 @@
-import { LabApp } from "@/components/lab-app";
+import { UiDesignWalkthrough } from "@/components/ui-design-walkthrough";
 
 export default function Home() {
-  return <LabApp />;
+  return <UiDesignWalkthrough />;
 }
