@@ -3,15 +3,13 @@
 import { useEffect, useState } from "react";
 import { BookingDetailScreen } from "@/components/screens/booking-detail-screen";
 import { DeskHomeScreen } from "@/components/screens/desk-home-screen";
-import { FeedbackScreen } from "@/components/screens/feedback-screen";
 import { IntroScreen } from "@/components/screens/intro-screen";
 import { NewCallerScreen } from "@/components/screens/new-caller-screen";
-import { SignoffScreen } from "@/components/screens/signoff-screen";
 import { Button } from "@/components/ui/button";
 import { WALK_STEPS, type WalkStepId } from "@/lib/design-data";
 import { ChevronLeft, ChevronRight, ListChecks } from "lucide-react";
 
-const STEP_STORAGE = "princess-travel-ui-step-v1";
+const STEP_STORAGE = "princess-travel-ui-step-v2";
 
 export function UiDesignWalkthrough() {
   const [stepIndex, setStepIndex] = useState(0);
@@ -48,7 +46,7 @@ export function UiDesignWalkthrough() {
   if (!ready) {
     return (
       <div className="flex min-h-screen items-center justify-center text-muted-foreground">
-        Opening UI design walkthrough…
+        Opening Princess Travel design…
       </div>
     );
   }
@@ -60,10 +58,10 @@ export function UiDesignWalkthrough() {
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div>
               <p className="text-xs tracking-wide text-[var(--pt-ink-soft)] uppercase">
-                Samuel Malke · UI Design Assignment · Oct 25, 2026
+                Design preview · Amira Aboudeeb
               </p>
               <h1 className="font-display text-2xl text-[var(--pt-ink)] sm:text-3xl">
-                Princess Travel UI design
+                Princess Travel desk
               </h1>
             </div>
             <div className="inline-flex items-center gap-2 rounded-full border border-[var(--pt-line)] bg-[var(--pt-sky)]/70 px-3 py-1.5 text-sm text-[var(--pt-ink)]">
@@ -137,7 +135,7 @@ export function UiDesignWalkthrough() {
             Back
           </Button>
           <p className="hidden text-center text-sm text-muted-foreground sm:block">
-            Walk Amira through each screen, then capture feedback and sign-off.
+            Walk through each screen together, then fill out the worksheet on paper.
           </p>
           <Button
             disabled={isLast}
@@ -165,10 +163,6 @@ function renderScreen(id: WalkStepId) {
       return <BookingDetailScreen />;
     case "search":
       return <DeskHomeScreen highlightSearch query="7735550142" />;
-    case "feedback":
-      return <FeedbackScreen />;
-    case "signoff":
-      return <SignoffScreen />;
     default:
       return null;
   }

@@ -10,7 +10,7 @@ export function IntroScreen() {
         <div className="relative">
           <p className="mb-2 inline-flex items-center gap-2 text-sm text-[var(--pt-ink-soft)]">
             <Plane className="size-4 text-[var(--pt-gold)]" />
-            UI Design walkthrough · Princess Travel
+            Desk design preview · Princess Travel
           </p>
           <h2 className="font-display text-4xl tracking-tight text-[var(--pt-ink)] sm:text-5xl">
             Princess Travel

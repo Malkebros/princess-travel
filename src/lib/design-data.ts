@@ -3,9 +3,7 @@ export type WalkStepId =
   | "desk"
   | "new-caller"
   | "booking"
-  | "search"
-  | "feedback"
-  | "signoff";
+  | "search";
 
 export type WalkStep = {
   id: WalkStepId;
@@ -73,28 +71,6 @@ export const WALK_STEPS: WalkStep[] = [
     whatToNotice: [
       "Phone search is the main fix for the memory bottleneck",
       "Needs action filter shows only open follow-ups",
-    ],
-  },
-  {
-    id: "feedback",
-    number: 6,
-    title: "Your feedback",
-    ownerScript:
-      "What should we change? Bigger text? Arabic labels? Fewer stages? Type notes here so Samuel can revise the design.",
-    whatToNotice: [
-      "Write likes, dislikes, and must-have changes",
-      "Samuel revises until you’re happy",
-    ],
-  },
-  {
-    id: "signoff",
-    number: 7,
-    title: "Owner sign-off",
-    ownerScript:
-      "When the design feels right, add your name and date below. That matches the UI Design Worksheet approval.",
-    whatToNotice: [
-      "Confirms the design meets Princess Travel’s needs",
-      "You can still ask for changes later before building",
     ],
   },
 ];
@@ -245,5 +221,3 @@ export const STAGES = [
   "Support",
 ] as const;
 
-export const FEEDBACK_KEY = "princess-travel-ui-feedback-v1";
-export const SIGNOFF_KEY = "princess-travel-ui-signoff-v1";
