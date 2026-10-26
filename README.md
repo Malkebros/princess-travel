@@ -12,13 +12,29 @@ Save names, phones, trips, status, and what to do next. Sabre stays in Sabre —
 - **WhatsApp** button on each caller  
 - New caller starts with name + phone only  
 - Email & price tucked under “More”  
-- Remembers last opened caller  
+- **Shared cloud save** (Supabase) so computer + iPhone see the same callers  
 
 ## Run locally
 
 ```bash
 npm install
+cp .env.example .env.local
+# add your Supabase URL + anon key, then:
 npm run dev -- --port 43141
 ```
 
 Open [http://127.0.0.1:43141](http://127.0.0.1:43141).
+
+Without Supabase keys, the desk still works and saves **on that device only**.
+
+## Shared cloud database (Supabase)
+
+1. Create a free project at [supabase.com](https://supabase.com).  
+2. Open **SQL Editor**, paste and run [`supabase/schema.sql`](supabase/schema.sql).  
+3. Go to **Project Settings → API** and copy:
+   - Project URL → `SUPABASE_URL`
+   - `anon` `public` key → `SUPABASE_ANON_KEY`  
+4. Put those in `.env.local` (local) and in **Vercel → Project → Settings → Environment Variables** (live site).  
+5. Redeploy.
+
+The header badge will say **Saved in the cloud** when sync is working.

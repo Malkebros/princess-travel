@@ -9,6 +9,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { SEED_BOOKINGS } from "@/lib/seed-data";
 import {
+  fetchBookings,
+  persistBookings,
+  resetBookingsCloud,
+  type SyncMode,
+} from "@/lib/bookings-api";
+import {
   loadSelectedId,
   saveSelectedId,
   stageLabel,
@@ -21,7 +27,7 @@ import {
   loadBookings,
   saveBookings,
 } from "@/lib/storage";
-import { Plane, Plus, RotateCcw, Search } from "lucide-react";
+import { Cloud, CloudOff, Plane, Plus, RotateCcw, Search } from "lucide-react";
 
 type StageFilter = Stage | "all";
 
@@ -33,33 +39,82 @@ export function DeskApp() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [mobileShowDetail, setMobileShowDetail] = useState(false);
+  const [syncMode, setSyncMode] = useState<SyncMode>("unknown");
+  const [syncLabel, setSyncLabel] = useState("Loading…");
   const searchRef = useRef<HTMLInputElement>(null);
+  const skipNextPersist = useRef(true);
   const lang = "en" as const;
 
   useEffect(() => {
-    const loaded = loadBookings();
-    const savedId = loadSelectedId();
-    setBookings(loaded);
-    const initial =
-      (savedId && loaded.find((b) => b.id === savedId)?.id) ||
-      loaded[0]?.id ||
-      null;
-    setSelectedId(initial);
-    setHydrated(true);
-    // Focus search shortly after open (desktop / tablet)
-    const tmr = window.setTimeout(() => searchRef.current?.focus(), 200);
-    return () => window.clearTimeout(tmr);
-  }, []);
+    let cancelled = false;
 
-  useEffect(() => {
-    if (!hydrated) return;
-    saveBookings(bookings);
-  }, [bookings, hydrated]);
+    async function boot() {
+      const savedId = loadSelectedId();
+      const remote = await fetchBookings();
+      if (cancelled) return;
+
+      let next: Booking[];
+      if (remote.mode === "cloud" && remote.bookings) {
+        next = remote.bookings;
+        setSyncMode("cloud");
+        setSyncLabel("Saved in the cloud — works on phone & computer");
+      } else {
+        next = loadBookings();
+        setSyncMode("local");
+        setSyncLabel(
+          "Saved on this device only — add Supabase to sync everywhere"
+        );
+      }
+
+      setBookings(next);
+      const initial =
+        (savedId && next.find((b) => b.id === savedId)?.id) ||
+        next[0]?.id ||
+        null;
+      setSelectedId(initial);
+      setHydrated(true);
+      skipNextPersist.current = true;
+      window.setTimeout(() => searchRef.current?.focus(), 200);
+    }
+
+    void boot();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     if (!hydrated) return;
     saveSelectedId(selectedId);
   }, [selectedId, hydrated]);
+
+  useEffect(() => {
+    if (!hydrated) return;
+    if (skipNextPersist.current) {
+      skipNextPersist.current = false;
+      return;
+    }
+
+    // Always keep a local backup
+    saveBookings(bookings);
+
+    if (syncMode !== "cloud") return;
+
+    const handle = window.setTimeout(() => {
+      void persistBookings(bookings).then((result) => {
+        if (result.ok) {
+          setSyncLabel("Saved in the cloud — works on phone & computer");
+        } else if (result.mode === "local") {
+          setSyncMode("local");
+          setSyncLabel("Cloud unavailable — saving on this device only");
+        } else {
+          setSyncLabel(result.error || "Could not save to cloud");
+        }
+      });
+    }, 450);
+
+    return () => window.clearTimeout(handle);
+  }, [bookings, hydrated, syncMode]);
 
   const counts = useMemo(() => {
     const map = Object.fromEntries(STAGES.map((s) => [s, 0])) as Record<
@@ -128,9 +183,18 @@ export function DeskApp() {
     setMobileShowDetail(false);
   }
 
-  function resetDemo() {
-    setBookings(SEED_BOOKINGS);
-    setSelectedId(SEED_BOOKINGS[0]?.id ?? null);
+  async function resetDemo() {
+    const result = await resetBookingsCloud();
+    const next =
+      result.bookings.length > 0 ? result.bookings : SEED_BOOKINGS;
+    skipNextPersist.current = true;
+    setBookings(next);
+    saveBookings(next);
+    if (result.mode === "cloud") {
+      setSyncMode("cloud");
+      setSyncLabel("Saved in the cloud — works on phone & computer");
+    }
+    setSelectedId(next[0]?.id ?? null);
     setQuery("");
     setStageFilter("all");
     setMobileShowDetail(false);
@@ -169,12 +233,27 @@ export function DeskApp() {
               <p className="mt-2 max-w-lg text-base text-[var(--pt-ink-soft)]">
                 {t(lang, "tagline")}
               </p>
+              <p
+                className={[
+                  "mt-3 inline-flex max-w-xl items-start gap-2 rounded-full px-3 py-1.5 text-sm",
+                  syncMode === "cloud"
+                    ? "bg-[var(--pt-teal-soft)] text-[var(--pt-teal-deep)]"
+                    : "bg-[var(--pt-gold-soft)] text-[var(--pt-ink)]",
+                ].join(" ")}
+              >
+                {syncMode === "cloud" ? (
+                  <Cloud className="mt-0.5 size-4 shrink-0" />
+                ) : (
+                  <CloudOff className="mt-0.5 size-4 shrink-0" />
+                )}
+                <span>{syncLabel}</span>
+              </p>
             </div>
             <div className="flex flex-wrap gap-2">
               <Button
                 variant="outline"
                 className="h-11 bg-white/70 text-base"
-                onClick={resetDemo}
+                onClick={() => void resetDemo()}
               >
                 <RotateCcw data-icon="inline-start" />
                 {t(lang, "resetSamples")}
