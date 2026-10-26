@@ -9,13 +9,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { SEED_BOOKINGS } from "@/lib/seed-data";
 import {
-  loadLang,
   loadSelectedId,
-  saveLang,
   saveSelectedId,
   stageLabel,
   t,
-  type Lang,
 } from "@/lib/i18n";
 import { STAGES, type Booking, type Stage } from "@/lib/types";
 import {
@@ -35,15 +32,14 @@ export function DeskApp() {
   const [stageFilter, setStageFilter] = useState<StageFilter>("all");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [lang, setLang] = useState<Lang>("en");
   const [mobileShowDetail, setMobileShowDetail] = useState(false);
   const searchRef = useRef<HTMLInputElement>(null);
+  const lang = "en" as const;
 
   useEffect(() => {
     const loaded = loadBookings();
     const savedId = loadSelectedId();
     setBookings(loaded);
-    setLang(loadLang());
     const initial =
       (savedId && loaded.find((b) => b.id === savedId)?.id) ||
       loaded[0]?.id ||
@@ -64,13 +60,6 @@ export function DeskApp() {
     if (!hydrated) return;
     saveSelectedId(selectedId);
   }, [selectedId, hydrated]);
-
-  useEffect(() => {
-    if (!hydrated) return;
-    saveLang(lang);
-    document.documentElement.lang = lang === "ar" ? "ar" : "en";
-    document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
-  }, [lang, hydrated]);
 
   const counts = useMemo(() => {
     const map = Object.fromEntries(STAGES.map((s) => [s, 0])) as Record<
@@ -155,10 +144,6 @@ export function DeskApp() {
     setQuery("");
   }
 
-  function toggleLang() {
-    setLang((prev) => (prev === "en" ? "ar" : "en"));
-  }
-
   if (!hydrated) {
     return (
       <div className="flex min-h-screen items-center justify-center text-muted-foreground">
@@ -189,13 +174,6 @@ export function DeskApp() {
               <Button
                 variant="outline"
                 className="h-11 bg-white/70 text-base"
-                onClick={toggleLang}
-              >
-                {lang === "en" ? t(lang, "langAr") : t(lang, "langEn")}
-              </Button>
-              <Button
-                variant="outline"
-                className="h-11 bg-white/70 text-base"
                 onClick={resetDemo}
               >
                 <RotateCcw data-icon="inline-start" />
@@ -212,7 +190,7 @@ export function DeskApp() {
           </div>
 
           <div className="relative max-w-xl">
-            <Search className="pointer-events-none absolute top-1/2 left-3 size-5 -translate-y-1/2 text-muted-foreground rtl:right-3 rtl:left-auto" />
+            <Search className="pointer-events-none absolute top-1/2 left-3 size-5 -translate-y-1/2 text-muted-foreground" />
             <Input
               ref={searchRef}
               value={query}

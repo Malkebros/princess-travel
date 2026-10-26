@@ -7,12 +7,11 @@ Save names, phones, trips, status, and what to do next. Sabre stays in Sabre —
 ## Built for easy use
 
 - Large buttons and list rows (works on phone)  
-- English / عربي language toggle  
 - Search by name or phone  
 - **WhatsApp** button on each caller  
 - New caller starts with name + phone only  
 - Email & price tucked under “More”  
-- Remembers language and last opened caller  
+- Remembers last opened caller  
 
 ## Run locally
 
