@@ -54,7 +54,12 @@ export function BookingDetail({
             </h2>
           </div>
           <div className="flex flex-wrap gap-2">
-            <ContactActions phone={booking.phone} lang={lang} />
+            <ContactActions
+              phone={booking.phone}
+              name={booking.customerName}
+              email={booking.email}
+              lang={lang}
+            />
             <Button
               variant="destructive"
               size="lg"

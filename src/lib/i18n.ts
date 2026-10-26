@@ -31,6 +31,8 @@ const en: Dict = {
   hideMore: "Hide",
   whatsapp: "WhatsApp",
   call: "Call",
+  text: "Text",
+  addContact: "Add contact",
   remove: "Remove",
   removeConfirm: "Remove this caller?",
   save: "Save",
@@ -72,6 +74,8 @@ const ar: Dict = {
   hideMore: "إخفاء",
   whatsapp: "واتساب",
   call: "اتصال",
+  text: "رسالة",
+  addContact: "إضافة جهة اتصال",
   remove: "حذف",
   removeConfirm: "حذف هذا المتصل؟",
   save: "حفظ",
@@ -155,4 +159,50 @@ export function whatsappUrl(phone: string): string | null {
   if (d.length < 10) return null;
   const withCountry = d.length === 10 ? `1${d}` : d;
   return `https://wa.me/${withCountry}`;
+}
+
+/** Opens the Messages app on iPhone to that number’s chat. */
+export function smsUrl(phone: string): string | null {
+  const d = phoneDigits(phone);
+  if (d.length < 10) return null;
+  return `sms:${d}`;
+}
+
+function escapeVCard(value: string): string {
+  return value
+    .replace(/\\/g, "\\\\")
+    .replace(/\n/g, "\\n")
+    .replace(/,/g, "\\,")
+    .replace(/;/g, "\\;");
+}
+
+/** Digits as +E.164-ish for a vCard TEL line (US 10-digit → +1…). */
+export function phoneE164(phone: string): string | null {
+  const d = phoneDigits(phone);
+  if (d.length < 10) return null;
+  if (d.length === 10) return `+1${d}`;
+  if (d.startsWith("1") && d.length === 11) return `+${d}`;
+  return d.startsWith("+") ? d : `+${d}`;
+}
+
+/** Build a .vcf so iPhone Safari can offer “Create New Contact”. */
+export function buildVCard(opts: {
+  name: string;
+  phone: string;
+  email?: string;
+}): string | null {
+  const tel = phoneE164(opts.phone);
+  if (!tel) return null;
+  const name = (opts.name || "").trim() || "Caller";
+  const email = (opts.email || "").trim();
+  const lines = [
+    "BEGIN:VCARD",
+    "VERSION:3.0",
+    `N:;${escapeVCard(name)};;;`,
+    `FN:${escapeVCard(name)}`,
+    `TEL;TYPE=CELL:${tel}`,
+  ];
+  if (email) lines.push(`EMAIL;TYPE=INTERNET:${escapeVCard(email)}`);
+  lines.push("NOTE:Princess Travel caller", "END:VCARD");
+  return lines.join("\r\n");
 }

@@ -88,7 +88,13 @@ export function BookingList({
 
               <div className="mt-3 flex flex-wrap items-center gap-3 border-t border-[var(--pt-line)]/80 pt-3">
                 <PhoneLink phone={booking.phone} className="text-base" />
-                <ContactActions phone={booking.phone} lang={lang} size="sm" />
+                <ContactActions
+                  phone={booking.phone}
+                  name={booking.customerName}
+                  email={booking.email}
+                  lang={lang}
+                  size="sm"
+                />
               </div>
             </div>
           </li>

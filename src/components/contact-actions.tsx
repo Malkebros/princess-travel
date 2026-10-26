@@ -1,25 +1,54 @@
 "use client";
 
 import { buttonVariants } from "@/components/ui/button";
-import { t, telUrl, whatsappUrl, type Lang } from "@/lib/i18n";
+import {
+  buildVCard,
+  smsUrl,
+  t,
+  telUrl,
+  whatsappUrl,
+  type Lang,
+} from "@/lib/i18n";
 import { formatPhone } from "@/lib/storage";
 import { cn } from "@/lib/utils";
-import { MessageCircle, Phone } from "lucide-react";
+import { ContactRound, MessageCircle, MessageSquareText, Phone } from "lucide-react";
 
 export function ContactActions({
   phone,
+  name = "",
+  email = "",
   lang,
   size = "lg",
 }: {
   phone: string;
+  name?: string;
+  email?: string;
   lang: Lang;
   size?: "sm" | "lg";
 }) {
   const callHref = telUrl(phone);
+  const textHref = smsUrl(phone);
   const waHref = whatsappUrl(phone);
+  const canAddContact = Boolean(buildVCard({ name, phone, email }));
   const tall = size === "lg";
 
-  if (!callHref && !waHref) return null;
+  if (!callHref && !textHref && !waHref && !canAddContact) return null;
+
+  function addToPhoneContacts() {
+    const vcard = buildVCard({ name, phone, email });
+    if (!vcard) return;
+    const safeName = (name || "caller").trim().replace(/[^\w\- ]+/g, "") || "caller";
+    const blob = new Blob([vcard], { type: "text/vcard;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${safeName}.vcf`;
+    a.rel = "noopener";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    window.setTimeout(() => URL.revokeObjectURL(url), 2000);
+  }
 
   return (
     <div className="flex flex-wrap gap-2">
@@ -36,6 +65,19 @@ export function ContactActions({
           {t(lang, "call")}
         </a>
       ) : null}
+      {textHref ? (
+        <a
+          href={textHref}
+          className={cn(
+            buttonVariants({ size: tall ? "lg" : "default" }),
+            tall ? "h-11 text-base" : "h-9 text-sm",
+            "bg-[var(--pt-ink)] text-white hover:bg-[var(--pt-ink)]/90"
+          )}
+        >
+          <MessageSquareText data-icon="inline-start" />
+          {t(lang, "text")}
+        </a>
+      ) : null}
       {waHref ? (
         <a
           href={waHref}
@@ -50,6 +92,23 @@ export function ContactActions({
           <MessageCircle data-icon="inline-start" />
           {t(lang, "whatsapp")}
         </a>
+      ) : null}
+      {canAddContact ? (
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            addToPhoneContacts();
+          }}
+          className={cn(
+            buttonVariants({ variant: "outline", size: tall ? "lg" : "default" }),
+            tall ? "h-11 text-base" : "h-9 text-sm",
+            "border-[var(--pt-line)] bg-white"
+          )}
+        >
+          <ContactRound data-icon="inline-start" />
+          {t(lang, "addContact")}
+        </button>
       ) : null}
     </div>
   );
