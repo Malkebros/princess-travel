@@ -1,15 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { ContactActions, PhoneLink } from "@/components/contact-actions";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { stageLabel, t, whatsappUrl, type Lang } from "@/lib/i18n";
+import { stageLabel, t, type Lang } from "@/lib/i18n";
 import { STAGES, type Booking, type Stage } from "@/lib/types";
-import { formatPhone } from "@/lib/storage";
-import { cn } from "@/lib/utils";
-import { ChevronDown, ChevronUp, MessageCircle, Trash2 } from "lucide-react";
+import { ChevronDown, ChevronUp, Trash2 } from "lucide-react";
 
 const fieldClass =
   "h-11 rounded-xl border-[var(--pt-line)] bg-white text-base md:text-base";
@@ -30,7 +29,6 @@ export function BookingDetail({
   const [showMore, setShowMore] = useState(
     Boolean(booking.email || booking.price)
   );
-  const wa = whatsappUrl(booking.phone);
 
   function patch(partial: Partial<Booking>) {
     onChange({ ...booking, ...partial });
@@ -50,28 +48,13 @@ export function BookingDetail({
         ) : null}
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <p className="text-base text-muted-foreground">
-              {formatPhone(booking.phone)}
-            </p>
+            <PhoneLink phone={booking.phone} className="text-base" />
             <h2 className="font-display text-3xl text-[var(--pt-ink)]">
               {booking.customerName || "—"}
             </h2>
           </div>
           <div className="flex flex-wrap gap-2">
-            {wa ? (
-              <a
-                href={wa}
-                target="_blank"
-                rel="noreferrer"
-                className={cn(
-                  buttonVariants({ size: "lg" }),
-                  "h-11 bg-[#25D366] text-base text-white hover:bg-[#1ebe57]"
-                )}
-              >
-                <MessageCircle data-icon="inline-start" />
-                {t(lang, "whatsapp")}
-              </a>
-            ) : null}
+            <ContactActions phone={booking.phone} lang={lang} />
             <Button
               variant="destructive"
               size="lg"

@@ -8,6 +8,7 @@ Save names, phones, trips, status, and what to do next. Sabre stays in Sabre —
 
 - Large buttons and list rows (works on phone)  
 - Search by name or phone  
+- Tap a **phone number** or **Call** to dial (works on iPhone)  
 - **WhatsApp** button on each caller  
 - New caller starts with name + phone only  
 - Email & price tucked under “More”  

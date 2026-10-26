@@ -30,6 +30,7 @@ const en: Dict = {
   more: "More (email & price)",
   hideMore: "Hide",
   whatsapp: "WhatsApp",
+  call: "Call",
   remove: "Remove",
   removeConfirm: "Remove this caller?",
   save: "Save",
@@ -70,6 +71,7 @@ const ar: Dict = {
   more: "المزيد (بريد وسعر)",
   hideMore: "إخفاء",
   whatsapp: "واتساب",
+  call: "اتصال",
   remove: "حذف",
   removeConfirm: "حذف هذا المتصل؟",
   save: "حفظ",
@@ -136,8 +138,20 @@ export function saveSelectedId(id: string | null) {
   else window.localStorage.setItem(SELECTED_KEY, id);
 }
 
+/** Digits for dialing; US 10-digit numbers get country code 1 for WhatsApp. */
+export function phoneDigits(phone: string): string {
+  return phone.replace(/\D/g, "");
+}
+
+/** Opens the Phone app on iPhone (or Continuity on Mac). */
+export function telUrl(phone: string): string | null {
+  const d = phoneDigits(phone);
+  if (d.length < 10) return null;
+  return `tel:${d}`;
+}
+
 export function whatsappUrl(phone: string): string | null {
-  const d = phone.replace(/\D/g, "");
+  const d = phoneDigits(phone);
   if (d.length < 10) return null;
   const withCountry = d.length === 10 ? `1${d}` : d;
   return `https://wa.me/${withCountry}`;
