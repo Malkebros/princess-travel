@@ -7,7 +7,7 @@ type Dict = Record<string, string>;
 
 const en: Dict = {
   brandSub: "Amira Aboudeeb",
-  tagline: "Names, numbers, and trips — Sabre stays in Sabre.",
+  tagline: "Names, numbers, and trips — synced for Amira.",
   search: "Search name or phone…",
   newCaller: "New caller",
   resetSamples: "Reset samples",
