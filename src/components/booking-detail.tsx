@@ -1,59 +1,100 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
+import { useState } from "react";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { STAGE_META, STAGES, type Booking, type Stage } from "@/lib/types";
+import { stageLabel, t, whatsappUrl, type Lang } from "@/lib/i18n";
+import { STAGES, type Booking, type Stage } from "@/lib/types";
 import { formatPhone } from "@/lib/storage";
-import { Trash2 } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { ChevronDown, ChevronUp, MessageCircle, Trash2 } from "lucide-react";
+
+const fieldClass =
+  "h-11 rounded-xl border-[var(--pt-line)] bg-white text-base md:text-base";
 
 export function BookingDetail({
   booking,
   onChange,
   onDelete,
+  lang,
+  onBack,
 }: {
   booking: Booking;
   onChange: (booking: Booking) => void;
   onDelete: (id: string) => void;
+  lang: Lang;
+  onBack?: () => void;
 }) {
+  const [showMore, setShowMore] = useState(
+    Boolean(booking.email || booking.price)
+  );
+  const wa = whatsappUrl(booking.phone);
+
   function patch(partial: Partial<Booking>) {
     onChange({ ...booking, ...partial });
   }
 
   return (
     <div className="overflow-hidden rounded-2xl border border-[var(--pt-line)] bg-white/95 shadow-[0_18px_40px_-28px_rgb(11_79_108_/_0.45)]">
-      <div className="flex flex-wrap items-start justify-between gap-3 border-b border-[var(--pt-line)] bg-[linear-gradient(120deg,#eef6fa_0%,#fffdf6_55%,#ffffff_100%)] px-5 py-4">
-        <div>
-          <p className="text-sm text-muted-foreground">
-            {formatPhone(booking.phone)}
-          </p>
-          <h2 className="font-display text-3xl text-[var(--pt-ink)]">
-            {booking.customerName || "Unnamed caller"}
-          </h2>
+      <div className="border-b border-[var(--pt-line)] bg-[linear-gradient(120deg,#eef6fa_0%,#fffdf6_55%,#ffffff_100%)] px-4 py-4 sm:px-5">
+        {onBack ? (
+          <button
+            type="button"
+            onClick={onBack}
+            className="mb-3 text-base text-[var(--pt-teal-deep)] underline-offset-2 hover:underline lg:hidden"
+          >
+            ← {t(lang, "backToList")}
+          </button>
+        ) : null}
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <p className="text-base text-muted-foreground">
+              {formatPhone(booking.phone)}
+            </p>
+            <h2 className="font-display text-3xl text-[var(--pt-ink)]">
+              {booking.customerName || "—"}
+            </h2>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {wa ? (
+              <a
+                href={wa}
+                target="_blank"
+                rel="noreferrer"
+                className={cn(
+                  buttonVariants({ size: "lg" }),
+                  "h-11 bg-[#25D366] text-base text-white hover:bg-[#1ebe57]"
+                )}
+              >
+                <MessageCircle data-icon="inline-start" />
+                {t(lang, "whatsapp")}
+              </a>
+            ) : null}
+            <Button
+              variant="destructive"
+              size="lg"
+              className="h-11 text-base"
+              onClick={() => {
+                if (window.confirm(t(lang, "removeConfirm"))) {
+                  onDelete(booking.id);
+                }
+              }}
+            >
+              <Trash2 data-icon="inline-start" />
+              {t(lang, "remove")}
+            </Button>
+          </div>
         </div>
-        <Button
-          variant="destructive"
-          size="sm"
-          onClick={() => {
-            if (
-              window.confirm(
-                `Remove ${booking.customerName || "this caller"}?`
-              )
-            ) {
-              onDelete(booking.id);
-            }
-          }}
-        >
-          <Trash2 data-icon="inline-start" />
-          Remove
-        </Button>
       </div>
 
-      <div className="grid gap-5 px-5 py-5">
+      <div className="grid gap-5 px-4 py-5 sm:px-5">
         <div>
-          <p className="mb-2 text-sm font-medium text-[var(--pt-ink)]">Status</p>
-          <div className="flex flex-wrap gap-1.5">
+          <p className="mb-2 text-base font-medium text-[var(--pt-ink)]">
+            {t(lang, "status")}
+          </p>
+          <div className="flex flex-wrap gap-2">
             {STAGES.map((stage) => {
               const current = stage === booking.stage;
               return (
@@ -62,13 +103,13 @@ export function BookingDetail({
                   type="button"
                   onClick={() => patch({ stage: stage as Stage })}
                   className={[
-                    "rounded-full px-3 py-1.5 text-sm transition-colors",
+                    "min-h-11 rounded-full px-4 py-2 text-base transition-colors",
                     current
                       ? "bg-[var(--pt-teal)] text-white"
                       : "bg-white text-muted-foreground ring-1 ring-[var(--pt-line)] hover:text-[var(--pt-ink)]",
                   ].join(" ")}
                 >
-                  {STAGE_META[stage].short}
+                  {stageLabel(lang, stage)}
                 </button>
               );
             })}
@@ -76,87 +117,113 @@ export function BookingDetail({
         </div>
 
         <div className="grid gap-3 sm:grid-cols-2">
-          <Field label="Name">
+          <Field label={t(lang, "name")}>
             <Input
+              className={fieldClass}
               value={booking.customerName}
               onChange={(e) => patch({ customerName: e.target.value })}
             />
           </Field>
-          <Field label="Phone">
+          <Field label={t(lang, "phone")}>
             <Input
+              className={fieldClass}
               value={booking.phone}
               onChange={(e) => patch({ phone: e.target.value })}
               inputMode="tel"
             />
           </Field>
-          <Field label="Email (optional)">
+          <Field label={t(lang, "from")}>
             <Input
-              value={booking.email}
-              onChange={(e) => patch({ email: e.target.value })}
-              type="email"
-            />
-          </Field>
-          <Field label="Passengers">
-            <Input
-              value={booking.passengers}
-              onChange={(e) => patch({ passengers: e.target.value })}
-              placeholder="2"
-            />
-          </Field>
-          <Field label="From">
-            <Input
+              className={fieldClass}
               value={booking.from}
               onChange={(e) => patch({ from: e.target.value.toUpperCase() })}
               placeholder="ORD"
             />
           </Field>
-          <Field label="To">
+          <Field label={t(lang, "to")}>
             <Input
+              className={fieldClass}
               value={booking.to}
               onChange={(e) => patch({ to: e.target.value.toUpperCase() })}
               placeholder="CAI"
             />
           </Field>
-          <Field label="Depart">
+          <Field label={t(lang, "depart")}>
             <Input
+              className={fieldClass}
               type="date"
               value={booking.departDate}
               onChange={(e) => patch({ departDate: e.target.value })}
             />
           </Field>
-          <Field label="Return">
+          <Field label={t(lang, "return")}>
             <Input
+              className={fieldClass}
               type="date"
               value={booking.returnDate}
               onChange={(e) => patch({ returnDate: e.target.value })}
             />
           </Field>
-          <Field label="Price (optional)">
+          <Field label={t(lang, "passengers")}>
             <Input
-              value={booking.price}
-              onChange={(e) => patch({ price: e.target.value })}
-              inputMode="decimal"
-              placeholder="1180"
+              className={fieldClass}
+              value={booking.passengers}
+              onChange={(e) => patch({ passengers: e.target.value })}
+              inputMode="numeric"
             />
           </Field>
         </div>
 
-        <Field label="What to do next">
+        <Field label={t(lang, "nextAction")}>
           <Input
+            className={fieldClass}
             value={booking.nextAction}
             onChange={(e) => patch({ nextAction: e.target.value })}
-            placeholder="e.g. Call back Saturday"
           />
         </Field>
 
-        <Field label="Notes">
+        <Field label={t(lang, "notes")}>
           <Textarea
+            className="min-h-28 rounded-xl border-[var(--pt-line)] text-base"
             value={booking.notes}
             onChange={(e) => patch({ notes: e.target.value })}
-            placeholder="Anything useful to remember…"
-            className="min-h-24"
           />
         </Field>
+
+        <div>
+          <button
+            type="button"
+            onClick={() => setShowMore((v) => !v)}
+            className="inline-flex min-h-11 items-center gap-1.5 text-base text-[var(--pt-teal-deep)]"
+          >
+            {showMore ? (
+              <ChevronUp className="size-4" />
+            ) : (
+              <ChevronDown className="size-4" />
+            )}
+            {showMore ? t(lang, "hideMore") : t(lang, "more")}
+          </button>
+          {showMore ? (
+            <div className="mt-3 grid gap-3 sm:grid-cols-2">
+              <Field label={`${t(lang, "email")} (${t(lang, "optional")})`}>
+                <Input
+                  className={fieldClass}
+                  value={booking.email}
+                  onChange={(e) => patch({ email: e.target.value })}
+                  type="email"
+                />
+              </Field>
+              <Field label={`${t(lang, "price")} (${t(lang, "optional")})`}>
+                <Input
+                  className={fieldClass}
+                  value={booking.price}
+                  onChange={(e) => patch({ price: e.target.value })}
+                  inputMode="decimal"
+                />
+              </Field>
+            </div>
+          ) : null}
+        </div>
       </div>
     </div>
   );
@@ -171,7 +238,7 @@ function Field({
 }) {
   return (
     <div className="grid gap-1.5">
-      <Label>{label}</Label>
+      <Label className="text-base">{label}</Label>
       {children}
     </div>
   );

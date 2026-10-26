@@ -1,15 +1,18 @@
 # Princess Travel Desk
 
-A simple caller list for **Princess Travel** (Amira Aboudeeb). Save names, phones, trips, status, and what to do next. Sabre stays in Sabre — this is just organization.
+A simple, phone-friendly caller list for **Princess Travel** (Amira Aboudeeb).
 
-## What you can do
+Save names, phones, trips, status, and what to do next. Sabre stays in Sabre — this is just organization.
 
+## Built for easy use
+
+- Large buttons and list rows (works on phone)  
+- English / عربي language toggle  
 - Search by name or phone  
-- Add a new caller  
-- Set status: New → Working on it → Waiting for pay → Done → Needs help  
-- Note price, passengers, and a next step  
-
-Data saves in the browser on this device.
+- **WhatsApp** button on each caller  
+- New caller starts with name + phone only  
+- Email & price tucked under “More”  
+- Remembers language and last opened caller  
 
 ## Run locally
 

@@ -1,7 +1,7 @@
 import { SEED_BOOKINGS } from "@/lib/seed-data";
 import type { Booking } from "@/lib/types";
 
-export const STORAGE_KEY = "princess-travel-desk-v2";
+export const STORAGE_KEY = "princess-travel-desk-v3";
 
 export function loadBookings(): Booking[] {
   if (typeof window === "undefined") return SEED_BOOKINGS;

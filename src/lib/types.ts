@@ -8,14 +8,6 @@ export const STAGES = [
 
 export type Stage = (typeof STAGES)[number];
 
-export const STAGE_META: Record<Stage, { short: string }> = {
-  open: { short: "New" },
-  working: { short: "Working on it" },
-  waiting_pay: { short: "Waiting for pay" },
-  done: { short: "Done" },
-  problem: { short: "Needs help" },
-};
-
 export type Booking = {
   id: string;
   customerName: string;
