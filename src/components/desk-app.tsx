@@ -27,11 +27,21 @@ import {
   loadBookings,
   saveBookings,
 } from "@/lib/storage";
-import { Cloud, CloudOff, Plane, Plus, RotateCcw, Search } from "lucide-react";
+import {
+  Cloud,
+  CloudOff,
+  Lock,
+  Plane,
+  Plus,
+  RotateCcw,
+  Search,
+} from "lucide-react";
+import { useRouter } from "next/navigation";
 
 type StageFilter = Stage | "all";
 
 export function DeskApp() {
+  const router = useRouter();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [hydrated, setHydrated] = useState(false);
   const [query, setQuery] = useState("");
@@ -44,6 +54,16 @@ export function DeskApp() {
   const searchRef = useRef<HTMLInputElement>(null);
   const skipNextPersist = useRef(true);
   const lang = "en" as const;
+
+  async function lockDesk() {
+    try {
+      await fetch("/api/unlock", { method: "DELETE" });
+    } catch {
+      // Still send her to unlock; cookie clear may have failed offline.
+    }
+    router.replace("/unlock");
+    router.refresh();
+  }
 
   useEffect(() => {
     let cancelled = false;
@@ -250,6 +270,14 @@ export function DeskApp() {
               </p>
             </div>
             <div className="flex flex-wrap gap-2">
+              <Button
+                variant="outline"
+                className="h-11 bg-white/70 text-base"
+                onClick={() => void lockDesk()}
+              >
+                <Lock data-icon="inline-start" />
+                {t(lang, "lockDesk")}
+              </Button>
               <Button
                 variant="outline"
                 className="h-11 bg-white/70 text-base"

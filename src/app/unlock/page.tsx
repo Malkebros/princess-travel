@@ -8,7 +8,8 @@ export default function UnlockPage() {
           Princess Travel
         </p>
         <p className="mt-1 text-base text-muted-foreground">
-          Enter the desk passcode to open Amira’s caller list.
+          Enter the desk passcode. You’ll need it again next time you open the
+          site.
         </p>
         <div className="mt-6">
           <UnlockForm />

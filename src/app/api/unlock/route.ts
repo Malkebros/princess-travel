@@ -24,12 +24,12 @@ export async function POST(request: Request) {
   }
 
   const res = NextResponse.json({ ok: true });
+  // Session cookie only — clears when the browser/app session ends.
   res.cookies.set(DESK_COOKIE, DESK_COOKIE_VALUE, {
     httpOnly: true,
     sameSite: "lax",
     secure: process.env.NODE_ENV === "production",
     path: "/",
-    maxAge: 60 * 60 * 24 * 60, // 60 days — Amira stays signed in
   });
   return res;
 }
