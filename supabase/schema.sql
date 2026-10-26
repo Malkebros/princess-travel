@@ -1,4 +1,5 @@
--- Run this once in the Supabase SQL Editor (Dashboard → SQL → New query)
+-- Run this once in the Supabase SQL Editor:
+-- https://supabase.com/dashboard/project/lzikzynkbxrkirvhfirj/sql/new
 
 create table if not exists bookings (
   id text primary key,
@@ -20,12 +21,12 @@ create table if not exists bookings (
 
 alter table bookings enable row level security;
 
--- Simple private desk: the Next.js API talks to Supabase.
--- Keep your Vercel URL private (family use). Add real auth later if needed.
 drop policy if exists "bookings_anon_all" on bookings;
 create policy "bookings_anon_all"
   on bookings
   for all
-  to anon, authenticated
   using (true)
   with check (true);
+
+-- Allow both legacy anon JWT and new publishable API keys
+grant select, insert, update, delete on table bookings to anon, authenticated, service_role;
