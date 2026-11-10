@@ -78,6 +78,12 @@ export function DeskApp() {
         next = remote.bookings;
         setSyncMode("cloud");
         setSyncLabel("Saved in the cloud — works on phone & computer");
+      } else if (remote.error) {
+        next = loadBookings();
+        setSyncMode("local");
+        setSyncLabel(
+          "Cloud unavailable — saving on this device only (check Supabase)"
+        );
       } else {
         next = loadBookings();
         setSyncMode("local");

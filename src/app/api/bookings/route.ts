@@ -26,10 +26,26 @@ export async function GET() {
     return NextResponse.json({ error: "Missing Supabase client" }, { status: 500 });
   }
 
-  const { data, error } = await supabase
-    .from("bookings")
-    .select("*")
-    .order("updated_at", { ascending: false });
+  let data: BookingRow[] | null = null;
+  let error: { message: string } | null = null;
+  try {
+    const result = await supabase
+      .from("bookings")
+      .select("*")
+      .order("updated_at", { ascending: false });
+    data = (result.data ?? null) as BookingRow[] | null;
+    error = result.error;
+  } catch (e) {
+    return NextResponse.json(
+      {
+        error:
+          e instanceof Error
+            ? e.message
+            : "Could not reach Supabase. Check the project URL and that the project is not paused.",
+      },
+      { status: 500 }
+    );
+  }
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
