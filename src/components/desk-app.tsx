@@ -24,8 +24,11 @@ import { STAGES, type Booking, type Stage } from "@/lib/types";
 import {
   digitsOnly,
   emptyBooking,
+  loadAutomationLog,
   loadBookings,
+  pushAutomationLog,
   saveBookings,
+  type AutomationLogEntry,
 } from "@/lib/storage";
 import {
   Bell,
@@ -54,6 +57,7 @@ export function DeskApp() {
   const [syncLabel, setSyncLabel] = useState("Loading…");
   const [automationEnabled, setAutomationEnabled] = useState(false);
   const [automationNote, setAutomationNote] = useState("");
+  const [automationLog, setAutomationLog] = useState<AutomationLogEntry[]>([]);
   const searchRef = useRef<HTMLInputElement>(null);
   const skipNextPersist = useRef(true);
   const lang = "en" as const;
@@ -103,6 +107,7 @@ export function DeskApp() {
         next[0]?.id ||
         null;
       setSelectedId(initial);
+      setAutomationLog(loadAutomationLog());
       setHydrated(true);
       skipNextPersist.current = true;
       window.setTimeout(() => searchRef.current?.focus(), 200);
@@ -138,19 +143,33 @@ export function DeskApp() {
           const n = result.customerNotify;
           if (n && (n.attempted > 0 || (n.stageChanged ?? 0) > 0)) {
             if (n.sent > 0) {
+              const msg = n.messages?.[0];
               setAutomationNote(
                 `Customer email sent (${n.sent}) — check inbox/spam`
               );
+              pushAutomationLog({
+                summary: `Sent ${n.sent} customer email(s) via Make`,
+                message: msg,
+              });
+              setAutomationLog(loadAutomationLog());
             } else if ((n.skippedNoEmail ?? 0) > 0) {
               setAutomationNote(
                 "Status saved — add email on the caller (More) to notify them"
               );
+              pushAutomationLog({
+                summary: "Status changed — skipped (caller has no email)",
+              });
+              setAutomationLog(loadAutomationLog());
             } else if (n.skipped > 0) {
               setAutomationNote(
                 "Status saved — connect Make webhook to email the customer"
               );
             } else if (n.failed > 0) {
               setAutomationNote("Customer notify failed — check webhook URL");
+              pushAutomationLog({
+                summary: "Customer notify failed — check Make webhook",
+              });
+              setAutomationLog(loadAutomationLog());
             }
           }
         } else if (result.mode === "local") {
@@ -314,6 +333,35 @@ export function DeskApp() {
                         : "Automations off — add AUTOMATION_WEBHOOK_URL in Make")}
                   </span>
                 </p>
+                {automationLog.length > 0 ? (
+                  <div className="max-w-xl rounded-2xl border border-[var(--pt-line)] bg-white/80 px-3 py-2 text-sm text-[var(--pt-ink-soft)]">
+                    <p className="font-medium text-[var(--pt-ink)]">
+                      Automation log
+                    </p>
+                    <ul className="mt-1 space-y-1.5">
+                      {automationLog.slice(0, 5).map((entry) => (
+                        <li key={entry.id}>
+                          <span className="text-[var(--pt-ink)]">
+                            {new Date(entry.at).toLocaleString("en-US", {
+                              month: "short",
+                              day: "numeric",
+                              hour: "numeric",
+                              minute: "2-digit",
+                            })}
+                          </span>
+                          {" — "}
+                          {entry.summary}
+                          {entry.message ? (
+                            <span className="mt-0.5 block text-[var(--pt-ink-soft)]">
+                              “{entry.message.slice(0, 90)}
+                              {entry.message.length > 90 ? "…" : ""}”
+                            </span>
+                          ) : null}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ) : null}
               </div>
             </div>
             <div className="flex flex-wrap gap-2">

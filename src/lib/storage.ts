@@ -2,6 +2,39 @@ import { SEED_BOOKINGS } from "@/lib/seed-data";
 import type { Booking } from "@/lib/types";
 
 export const STORAGE_KEY = "princess-travel-desk-v3";
+export const AUTOMATION_LOG_KEY = "princess-travel-automation-log-v1";
+
+export type AutomationLogEntry = {
+  id: string;
+  at: string;
+  summary: string;
+  message?: string;
+};
+
+export function loadAutomationLog(): AutomationLogEntry[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = window.localStorage.getItem(AUTOMATION_LOG_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw) as AutomationLogEntry[];
+    return Array.isArray(parsed) ? parsed.slice(0, 20) : [];
+  } catch {
+    return [];
+  }
+}
+
+export function pushAutomationLog(entry: Omit<AutomationLogEntry, "id" | "at">) {
+  if (typeof window === "undefined") return;
+  const next: AutomationLogEntry[] = [
+    {
+      id: newId("log"),
+      at: new Date().toISOString(),
+      ...entry,
+    },
+    ...loadAutomationLog(),
+  ].slice(0, 20);
+  window.localStorage.setItem(AUTOMATION_LOG_KEY, JSON.stringify(next));
+}
 
 export function loadBookings(): Booking[] {
   if (typeof window === "undefined") return SEED_BOOKINGS;
