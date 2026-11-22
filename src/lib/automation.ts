@@ -50,7 +50,11 @@ export type StageChangedPayload = {
   price: string;
   previousStage: string;
   stage: Stage;
+  /** Ready-to-send customer SMS/email body */
   message: string;
+  /** Same as message — easier to find in Make’s field picker */
+  text: string;
+  body: string;
   notifiedAt: string;
 };
 
@@ -153,6 +157,7 @@ export function findStageChanges(
     if (prev.stage === booking.stage) continue;
     if (!booking.phone.trim()) continue;
 
+    const message = customerMessageForStage(booking);
     changes.push({
       event: "stage_changed",
       id: booking.id,
@@ -165,7 +170,9 @@ export function findStageChanges(
       price: booking.price,
       previousStage: prev.stage,
       stage: booking.stage,
-      message: customerMessageForStage(booking),
+      message,
+      text: message,
+      body: message,
       notifiedAt: new Date().toISOString(),
     });
   }

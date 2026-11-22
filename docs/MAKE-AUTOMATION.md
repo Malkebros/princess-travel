@@ -15,10 +15,17 @@ Two automations, both **without a special “Send” button**:
 
 ### Route A — text the customer
 - Filter: `event` equals `stage_changed`
-- Module: **SMS** / **WhatsApp** / **Email**
+- Module: **SMS** / **WhatsApp** / **Email** / **Slack** (avoid Gmail if Google blocks Make)
   - To: `{{phone}}` (or email)
-  - Text: `{{message}}`  
-  (the app already fills a polite message for that stage)
+  - Text / body: **only** the webhook’s message field  
+
+**Important (Make module numbers):** Look at the small grey number on the **Webhook** circle (examples: `2`, `12`). Put that number in the mapping:
+
+```
+{{12.message}}
+```
+
+Wrong number → email shows `undefined` and MIME `boundary_…` junk. Body must contain **only** that chip — no extra text.
 
 ### Route B — email Amira the daily follow-ups
 - Filter: `event` equals `follow_up_digest`
