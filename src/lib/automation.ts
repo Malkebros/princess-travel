@@ -147,16 +147,26 @@ export function buildFollowUpDigest(
 export function findStageChanges(
   previous: Booking[],
   next: Booking[]
-): StageChangedPayload[] {
+): {
+  changes: StageChangedPayload[];
+  skippedNoEmail: number;
+  stageChanged: number;
+} {
   const prevById = new Map(previous.map((b) => [b.id, b]));
   const changes: StageChangedPayload[] = [];
+  let skippedNoEmail = 0;
+  let stageChanged = 0;
 
   for (const booking of next) {
     const prev = prevById.get(booking.id);
     if (!prev) continue;
     if (prev.stage === booking.stage) continue;
+    stageChanged += 1;
     // Customer email notify needs an address (Make Gmail To)
-    if (!booking.email.trim()) continue;
+    if (!booking.email.trim()) {
+      skippedNoEmail += 1;
+      continue;
+    }
 
     const message = customerMessageForStage(booking);
     changes.push({
@@ -178,7 +188,7 @@ export function findStageChanges(
     });
   }
 
-  return changes;
+  return { changes, skippedNoEmail, stageChanged };
 }
 
 async function postWebhook(payload: unknown): Promise<{
@@ -229,6 +239,7 @@ export async function notifyStageChanges(changes: StageChangedPayload[]) {
     sent: results.filter((r) => r.ok).length,
     skipped: results.filter((r) => r.skipped).length,
     failed: results.filter((r) => !r.ok && !r.skipped).length,
+    messages: changes.map((c) => c.message),
   };
 }
 

@@ -89,7 +89,12 @@ export function BookingDetail({
                 <button
                   key={stage}
                   type="button"
-                  onClick={() => patch({ stage: stage as Stage })}
+                  onClick={() =>
+                    patch({
+                      stage: stage as Stage,
+                      updatedAt: new Date().toISOString(),
+                    })
+                  }
                   className={[
                     "min-h-11 rounded-full px-4 py-2 text-base transition-colors",
                     current

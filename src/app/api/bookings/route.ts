@@ -122,15 +122,26 @@ export async function PUT(request: Request) {
     }
   }
 
-  const stageChanges = findStageChanges(previous, body.bookings);
+  const { changes: stageChanges, skippedNoEmail, stageChanged } =
+    findStageChanges(previous, body.bookings);
   let customerNotify = {
     attempted: 0,
     sent: 0,
     skipped: 0,
     failed: 0,
+    skippedNoEmail: 0,
+    stageChanged: 0,
+    messages: [] as string[],
   };
   if (stageChanges.length > 0) {
-    customerNotify = await notifyStageChanges(stageChanges);
+    customerNotify = {
+      ...customerNotify,
+      ...(await notifyStageChanges(stageChanges)),
+      skippedNoEmail,
+      stageChanged,
+    };
+  } else {
+    customerNotify = { ...customerNotify, skippedNoEmail, stageChanged };
   }
 
   const { data: existing, error: listError } = await supabase

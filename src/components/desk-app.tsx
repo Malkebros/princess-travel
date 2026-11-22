@@ -136,14 +136,18 @@ export function DeskApp() {
         if (result.ok) {
           setSyncLabel("Saved in the cloud — works on phone & computer");
           const n = result.customerNotify;
-          if (n && n.attempted > 0) {
+          if (n && (n.attempted > 0 || (n.stageChanged ?? 0) > 0)) {
             if (n.sent > 0) {
               setAutomationNote(
-                `Customer update sent (${n.sent}) for status change`
+                `Customer email sent (${n.sent}) — check inbox/spam`
+              );
+            } else if ((n.skippedNoEmail ?? 0) > 0) {
+              setAutomationNote(
+                "Status saved — add email on the caller (More) to notify them"
               );
             } else if (n.skipped > 0) {
               setAutomationNote(
-                "Status saved — connect Make webhook to text the customer"
+                "Status saved — connect Make webhook to email the customer"
               );
             } else if (n.failed > 0) {
               setAutomationNote("Customer notify failed — check webhook URL");
