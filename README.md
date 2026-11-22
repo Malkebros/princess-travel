@@ -14,6 +14,7 @@ Save names, phones, trips, status, and what to do next. Sabre stays in Sabre —
 - Email & price tucked under “More”  
 - **Shared cloud save** (Supabase) so computer + iPhone see the same callers  
 - **Desk passcode** (optional) so strangers with the link can’t open it — no Vercel login  
+- **New-caller automation** — saving a new caller fires a Make/Zapier/n8n webhook (email/SMS to Amira)  
 
 ## Run locally
 
@@ -49,3 +50,14 @@ Vercel’s built-in password wall needs a paid plan. This app uses a simple shar
 3. Opening the site shows an unlock screen. Unlock lasts for the browser session only (and she can tap **Lock desk** anytime).
 
 If `DESK_PASSCODE` is empty, the lock is off.
+
+## New-caller automation (Make / Zapier / n8n)
+
+When a **new** caller is saved (not an edit of an existing one), the desk POSTs to `AUTOMATION_WEBHOOK_URL`.
+
+Full setup steps: [`docs/MAKE-AUTOMATION.md`](docs/MAKE-AUTOMATION.md).
+
+1. Create a Make (or Zapier) scenario: **Custom webhook → Email/SMS**.  
+2. Paste the webhook URL into `AUTOMATION_WEBHOOK_URL` (local + Vercel).  
+3. Redeploy.  
+4. Add a new caller in the desk — Amira gets the alert automatically.

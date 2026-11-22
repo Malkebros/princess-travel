@@ -6,6 +6,7 @@ export async function fetchBookings(): Promise<{
   mode: SyncMode;
   bookings: Booking[] | null;
   error?: string;
+  automationEnabled?: boolean;
 }> {
   try {
     const res = await fetch("/api/bookings", { cache: "no-store" });
@@ -14,6 +15,7 @@ export async function fetchBookings(): Promise<{
       bookings?: Booking[] | null;
       error?: string;
       message?: string;
+      automationEnabled?: boolean;
     };
     if (!res.ok) {
       return { mode: "unknown", bookings: null, error: data.error || res.statusText };
@@ -22,6 +24,7 @@ export async function fetchBookings(): Promise<{
       mode: data.mode === "cloud" ? "cloud" : "local",
       bookings: data.bookings ?? null,
       error: data.message,
+      automationEnabled: Boolean(data.automationEnabled),
     };
   } catch (e) {
     return {
@@ -36,6 +39,12 @@ export async function persistBookings(bookings: Booking[]): Promise<{
   ok: boolean;
   mode: SyncMode;
   error?: string;
+  automation?: {
+    attempted: number;
+    sent: number;
+    skipped: number;
+    failed: number;
+  };
 }> {
   try {
     const res = await fetch("/api/bookings", {
@@ -43,14 +52,23 @@ export async function persistBookings(bookings: Booking[]): Promise<{
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ bookings }),
     });
-    const data = (await res.json()) as { error?: string; mode?: SyncMode };
+    const data = (await res.json()) as {
+      error?: string;
+      mode?: SyncMode;
+      automation?: {
+        attempted: number;
+        sent: number;
+        skipped: number;
+        failed: number;
+      };
+    };
     if (res.status === 503) {
       return { ok: false, mode: "local", error: data.error };
     }
     if (!res.ok) {
       return { ok: false, mode: "unknown", error: data.error || res.statusText };
     }
-    return { ok: true, mode: "cloud" };
+    return { ok: true, mode: "cloud", automation: data.automation };
   } catch (e) {
     return {
       ok: false,

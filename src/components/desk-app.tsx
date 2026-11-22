@@ -28,6 +28,7 @@ import {
   saveBookings,
 } from "@/lib/storage";
 import {
+  Bell,
   Cloud,
   CloudOff,
   Lock,
@@ -51,6 +52,8 @@ export function DeskApp() {
   const [mobileShowDetail, setMobileShowDetail] = useState(false);
   const [syncMode, setSyncMode] = useState<SyncMode>("unknown");
   const [syncLabel, setSyncLabel] = useState("Loading…");
+  const [automationEnabled, setAutomationEnabled] = useState(false);
+  const [automationNote, setAutomationNote] = useState("");
   const searchRef = useRef<HTMLInputElement>(null);
   const skipNextPersist = useRef(true);
   const lang = "en" as const;
@@ -74,6 +77,8 @@ export function DeskApp() {
       if (cancelled) return;
 
       let next: Booking[];
+      setAutomationEnabled(Boolean(remote.automationEnabled));
+
       if (remote.mode === "cloud" && remote.bookings) {
         next = remote.bookings;
         setSyncMode("cloud");
@@ -130,6 +135,20 @@ export function DeskApp() {
       void persistBookings(bookings).then((result) => {
         if (result.ok) {
           setSyncLabel("Saved in the cloud — works on phone & computer");
+          const auto = result.automation;
+          if (auto && auto.attempted > 0) {
+            if (auto.sent > 0) {
+              setAutomationNote(
+                `New-caller alert sent (${auto.sent}) — check Amira’s email/phone`
+              );
+            } else if (auto.skipped > 0) {
+              setAutomationNote(
+                "New caller saved — connect Make webhook to send alerts"
+              );
+            } else if (auto.failed > 0) {
+              setAutomationNote("New-caller alert failed — check webhook URL");
+            }
+          }
         } else if (result.mode === "local") {
           setSyncMode("local");
           setSyncLabel("Cloud unavailable — saving on this device only");
@@ -259,21 +278,39 @@ export function DeskApp() {
               <p className="mt-2 max-w-lg text-base text-[var(--pt-ink-soft)]">
                 {t(lang, "tagline")}
               </p>
-              <p
-                className={[
-                  "mt-3 inline-flex max-w-xl items-start gap-2 rounded-full px-3 py-1.5 text-sm",
-                  syncMode === "cloud"
-                    ? "bg-[var(--pt-teal-soft)] text-[var(--pt-teal-deep)]"
-                    : "bg-[var(--pt-gold-soft)] text-[var(--pt-ink)]",
-                ].join(" ")}
-              >
-                {syncMode === "cloud" ? (
-                  <Cloud className="mt-0.5 size-4 shrink-0" />
-                ) : (
-                  <CloudOff className="mt-0.5 size-4 shrink-0" />
-                )}
-                <span>{syncLabel}</span>
-              </p>
+              <div className="mt-3 flex flex-col gap-2">
+                <p
+                  className={[
+                    "inline-flex max-w-xl items-start gap-2 rounded-full px-3 py-1.5 text-sm",
+                    syncMode === "cloud"
+                      ? "bg-[var(--pt-teal-soft)] text-[var(--pt-teal-deep)]"
+                      : "bg-[var(--pt-gold-soft)] text-[var(--pt-ink)]",
+                  ].join(" ")}
+                >
+                  {syncMode === "cloud" ? (
+                    <Cloud className="mt-0.5 size-4 shrink-0" />
+                  ) : (
+                    <CloudOff className="mt-0.5 size-4 shrink-0" />
+                  )}
+                  <span>{syncLabel}</span>
+                </p>
+                <p
+                  className={[
+                    "inline-flex max-w-xl items-start gap-2 rounded-full px-3 py-1.5 text-sm",
+                    automationEnabled
+                      ? "bg-[var(--pt-teal-soft)] text-[var(--pt-teal-deep)]"
+                      : "bg-white/80 text-[var(--pt-ink-soft)]",
+                  ].join(" ")}
+                >
+                  <Bell className="mt-0.5 size-4 shrink-0" />
+                  <span>
+                    {automationNote ||
+                      (automationEnabled
+                        ? "New-caller alerts on — Make/Zapier runs automatically"
+                        : "New-caller alerts off — add AUTOMATION_WEBHOOK_URL")}
+                  </span>
+                </p>
+              </div>
             </div>
             <div className="flex flex-wrap gap-2">
               <Button

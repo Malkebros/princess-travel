@@ -19,13 +19,18 @@ A simple, phone-friendly **caller & booking desk** (not a public marketing site,
 5. From a caller card: **Call**, **Text**, **WhatsApp**, or **Add contact** (iPhone vCard).
 6. Lock the desk when done (session cookie clears next browser session).
 
-### Out of scope for this MVP
-Automations, AI features, WhatsApp bots, multi-user logins, custom public domain / Google SEO.
+### Automation (feature completion)
+- When a **new caller** is saved to the cloud desk, the server POSTs JSON to `AUTOMATION_WEBHOOK_URL` (Make / Zapier / n8n).
+- That scenario emails/texts Amira — no button click in the UI.
+- Setup: `docs/MAKE-AUTOMATION.md`
+
+### Out of scope unless requested
+Full WhatsApp bots, multi-user logins, custom public domain / Google SEO, Sabre integrations.
 
 ## Stack
 - Next.js (App Router) + TypeScript + Tailwind + shadcn/ui
 - Supabase Postgres table `bookings` (see `supabase/schema.sql`)
-- Env: `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `DESK_PASSCODE`
+- Env: `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `DESK_PASSCODE`, `AUTOMATION_WEBHOOK_URL`
 - Deployed on Vercel project `princess-travel`
 
 ## Product rules for agents
