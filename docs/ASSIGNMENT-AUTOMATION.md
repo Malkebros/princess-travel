@@ -1,47 +1,89 @@
-# Automation assignment — draft answers (Samuel / Princess Travel)
+# Automation Feature Completion — fill-in for the Word doc
 
-## Feature (what to demo)
+**Student:** Samuel Malke  
+**Business:** Princess Travel (Amira Aboudeeb)  
+**Date:** update to today when you submit  
 
-**Customer status notify + Amira follow-up digest**
+---
 
-1. Amira changes a caller’s **status** (e.g. Working → Waiting pay) and taps Save.  
-2. The desk POSTs `stage_changed` to Make with a ready-made SMS/WhatsApp text for that stage.  
-3. Make texts the **customer**.  
-4. Separately, a **daily cron** emails Amira a list of callers still open / waiting on pay.
+## 1. GitHub repo link
 
-No extra “Send” button — saving the stage is the trigger.
+https://github.com/Malkebros/princess-travel  
 
-## Setup still needed for a live text
+Live desk: https://princess-travel-malkebros.vercel.app  
 
-1. Make.com → Custom webhook + Router (see `docs/MAKE-AUTOMATION.md`).  
-2. Paste the hook URL into Vercel env `AUTOMATION_WEBHOOK_URL`.  
-3. Redeploy.
+---
 
-Until that URL is set, the desk still saves; the badge says connect Make.
+## 2. Automation (no button click)
 
-## Demo video script (~60–90s)
+**Name:** Customer status notify (Make) + daily follow-up digest  
 
-1. Open [princess-travel-malkebros.vercel.app](https://princess-travel-malkebros.vercel.app) → unlock.  
-2. Open a caller with a phone → change status to **Waiting pay** → Save.  
-3. Show Make run history + the customer message.  
-4. (Optional) Hit follow-ups once to show Amira’s digest email.
+**How it works:**
+1. Amira opens a caller and changes **status** (e.g. Working → Waiting for pay).  
+2. Saving to Supabase posts `stage_changed` to Make (webhook).  
+3. Make sends a Gmail to the customer with a ready-made message for that stage.  
+4. Separately, Vercel Cron hits `/api/automation/follow-ups` daily and Make can email Amira a digest of callers still open / waiting on pay.  
 
-## Features / bugs list (short)
+**No “Send” button** — changing status + save is the trigger.
 
-**Features**
-- Phone-friendly caller desk (search, status filters, Call / Text / WhatsApp / Add contact)
-- Shared Supabase cloud save (computer + iPhone)
-- Desk passcode (no Vercel login)
-- Status-change customer notify via Make
-- Daily follow-up digest for Amira
+**Tools:** Make.com (Custom webhook → Gmail), Vercel Cron, Supabase  
 
-**Bugs / limits**
-- Customer texts only fire when `AUTOMATION_WEBHOOK_URL` is set and Make is ON
-- No real WhatsApp Business API in-app (Make/WhatsApp module does the send)
-- Hobby Vercel cron is once/day (fine for follow-ups)
+---
 
-## Owner feedback (Amira) — fill after demo
+## 3. Demo video script (2–3 min)
 
-- What she liked:  
-- What she wanted changed:  
-- Would she use it daily?:  
+1. Unlock the desk → show caller list (search / status filters).  
+2. Open a caller that has an **email** → change status → show cloud save.  
+3. Switch to Make → green checkmarks on Webhook → Gmail.  
+4. Open Gmail → show the Princess Travel update email with the stage message.  
+5. (Optional) Mention daily follow-up cron for Amira.  
+6. Quick pass: Call / Text / WhatsApp / Lock desk.  
+
+---
+
+## 4. Features finished
+
+- Phone-friendly caller desk (list, search, status filters)  
+- Add / edit caller: trip, price, status, notes, next action  
+- Shared **Supabase** cloud save (computer + iPhone)  
+- Desk **passcode** (no Vercel account login)  
+- Call / Text / WhatsApp / Add contact (vCard)  
+- **Make automation:** status change → customer email  
+- **Daily follow-up digest** cron for Amira (open / waiting_pay)  
+- Deployed on Vercel  
+
+## Bugs / issues fixed
+
+- Vercel password wall needs Pro → built app passcode instead  
+- Supabase pause → cloud “fetch failed”; restore project in dashboard  
+- Make webhook “not listening” → scenario Active + Save; recreate webhook if orphaned  
+- Blank / `undefined` / `boundary_` emails → map `{{12.message}}` only; Raw HTML  
+- Empty `12.email` → caller had no email on card; add email under More (or ifempty fallback)  
+- Cron blocked by desk lock → allow `/api/automation/follow-ups` without session  
+
+---
+
+## 5. Owner feedback (fill after Amira tries it)
+
+**Review date:** ______________  
+
+What she liked:  
+-  
+
+What was confusing / broken:  
+-  
+
+Changes she asked for:  
+-  
+
+Would she use this on calls?: Yes / No / Maybe —  
+
+---
+
+## Paste-ready short answers
+
+**Automation one-liner:**  
+When Amira changes a caller’s status, Make emails the customer a stage-specific update with no extra button; a daily cron can also email Amira follow-ups.
+
+**Features finished (one paragraph):**  
+Finished the Princess Travel caller desk with cloud sync, passcode lock, phone actions, status-based Make email to customers, and a daily follow-up digest for Amira. Deployed at princess-travel-malkebros.vercel.app.
