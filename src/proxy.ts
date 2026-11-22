@@ -10,6 +10,11 @@ export function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
+  // Cron / Make schedule hit this without the desk session cookie
+  if (pathname.startsWith("/api/automation/follow-ups")) {
+    return NextResponse.next();
+  }
+
   const unlocked = request.cookies.get(DESK_COOKIE)?.value === DESK_COOKIE_VALUE;
   if (unlocked) return NextResponse.next();
 
