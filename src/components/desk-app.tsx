@@ -53,6 +53,7 @@ export function DeskApp() {
   const [syncMode, setSyncMode] = useState<SyncMode>("unknown");
   const [syncLabel, setSyncLabel] = useState("Loading…");
   const [automationEnabled, setAutomationEnabled] = useState(false);
+  const [automationNote, setAutomationNote] = useState("");
   const searchRef = useRef<HTMLInputElement>(null);
   const skipNextPersist = useRef(true);
   const lang = "en" as const;
@@ -134,6 +135,20 @@ export function DeskApp() {
       void persistBookings(bookings).then((result) => {
         if (result.ok) {
           setSyncLabel("Saved in the cloud — works on phone & computer");
+          const n = result.customerNotify;
+          if (n && n.attempted > 0) {
+            if (n.sent > 0) {
+              setAutomationNote(
+                `Customer update sent (${n.sent}) for status change`
+              );
+            } else if (n.skipped > 0) {
+              setAutomationNote(
+                "Status saved — connect Make webhook to text the customer"
+              );
+            } else if (n.failed > 0) {
+              setAutomationNote("Customer notify failed — check webhook URL");
+            }
+          }
         } else if (result.mode === "local") {
           setSyncMode("local");
           setSyncLabel("Cloud unavailable — saving on this device only");
@@ -289,9 +304,10 @@ export function DeskApp() {
                 >
                   <Bell className="mt-0.5 size-4 shrink-0" />
                   <span>
-                    {automationEnabled
-                      ? "Follow-up reminders on — daily alert for open / waiting pay"
-                      : "Follow-up reminders off — add AUTOMATION_WEBHOOK_URL"}
+                    {automationNote ||
+                      (automationEnabled
+                        ? "Automations on — status texts customer; daily follow-ups for Amira"
+                        : "Automations off — add AUTOMATION_WEBHOOK_URL in Make")}
                   </span>
                 </p>
               </div>

@@ -14,7 +14,8 @@ Save names, phones, trips, status, and what to do next. Sabre stays in Sabre —
 - Email & price tucked under “More”  
 - **Shared cloud save** (Supabase) so computer + iPhone see the same callers  
 - **Desk passcode** (optional) so strangers with the link can’t open it — no Vercel login  
-- **Follow-up reminders** — daily automation emails/texts Amira about callers still open or waiting on pay  
+- **Customer status texts** — change a caller’s stage and Make/Zapier can SMS/WhatsApp them automatically  
+- **Follow-up reminders** — daily automation emails Amira about callers still open or waiting on pay  
 
 ## Run locally
 
@@ -51,13 +52,17 @@ Vercel’s built-in password wall needs a paid plan. This app uses a simple shar
 
 If `DESK_PASSCODE` is empty, the lock is off.
 
-## Follow-up reminder automation (Make / Zapier / n8n)
+## Automations (Make / Zapier / n8n)
 
-A **daily cron** finds callers still **open** or **waiting_pay** for 2+ days and POSTs a digest to `AUTOMATION_WEBHOOK_URL` (Make emails/texts Amira). No button click.
+Two events, one webhook URL. Full setup: [`docs/MAKE-AUTOMATION.md`](docs/MAKE-AUTOMATION.md).
 
-Full setup: [`docs/MAKE-AUTOMATION.md`](docs/MAKE-AUTOMATION.md).
+1. **Customer notify** — when Amira changes a caller’s **status**, the app POSTs `stage_changed` with a ready-made message (Make texts the customer).  
+2. **Follow-up digest** — daily cron finds callers still **open** / **waiting_pay** for 2+ days and POSTs `follow_up_digest` (Make emails Amira).
 
-1. Make scenario: **Custom webhook → Email**.  
-2. Set `AUTOMATION_WEBHOOK_URL` + `CRON_SECRET` on Vercel.  
-3. Redeploy (cron path: `/api/automation/follow-ups`).  
-4. Demo: leave a caller open → run the job → show Amira’s email.
+```bash
+AUTOMATION_WEBHOOK_URL=https://hook.us1.make.com/…
+CRON_SECRET=long-random-string
+FOLLOW_UP_AFTER_DAYS=2
+```
+
+Demo: edit a caller → set status to **Waiting pay** → save → show the customer text in Make’s history.

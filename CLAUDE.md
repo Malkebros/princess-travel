@@ -20,8 +20,8 @@ A simple, phone-friendly **caller & booking desk** (not a public marketing site,
 6. Lock the desk when done (session cookie clears next browser session).
 
 ### Automation (feature completion)
-- **Follow-up reminders:** daily job finds callers still `open` or `waiting_pay` for N+ days and POSTs a digest to `AUTOMATION_WEBHOOK_URL` (Make / Zapier / n8n emails Amira).
-- Triggered by Vercel Cron (`/api/automation/follow-ups`) — no button in the desk.
+- **Customer stage notify:** when Amira changes a caller’s status, the desk POSTs `stage_changed` to `AUTOMATION_WEBHOOK_URL` with a ready-made SMS/WhatsApp message for that stage (Make texts the customer). Saving the status is enough — no Send button.
+- **Follow-up reminders:** daily cron finds callers still `open` or `waiting_pay` for N+ days and POSTs `follow_up_digest` (Make emails Amira).
 - Setup: `docs/MAKE-AUTOMATION.md`
 
 ### Out of scope unless requested

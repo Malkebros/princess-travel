@@ -1,7 +1,19 @@
 import type { Booking, Stage } from "@/lib/types";
 
-/** Stages that still need Amira’s attention */
+/** Stages that still need Amira’s attention (daily digest) */
 export const FOLLOW_UP_STAGES: Stage[] = ["open", "waiting_pay"];
+
+/** SMS/text Amira can auto-send to the customer when status changes */
+export const CUSTOMER_STAGE_MESSAGES: Record<Stage, string> = {
+  open: "Hi {{name}}, this is Princess Travel. We received your trip request and will follow up soon.",
+  working:
+    "Hi {{name}}, Princess Travel here — we’re working on your {{from}} → {{to}} options now.",
+  waiting_pay:
+    "Hi {{name}}, your fare is ready{{price}}. Please reply here or call to complete payment. — Princess Travel",
+  done: "Hi {{name}}, you’re ticketed for {{from}} → {{to}}{{depart}}. Safe travels! — Princess Travel",
+  problem:
+    "Hi {{name}}, we’re fixing an issue with your booking and will update you shortly. — Princess Travel",
+};
 
 export type FollowUpCaller = {
   id: string;
@@ -26,6 +38,22 @@ export type FollowUpDigestPayload = {
   generatedAt: string;
 };
 
+export type StageChangedPayload = {
+  event: "stage_changed";
+  id: string;
+  customerName: string;
+  phone: string;
+  email: string;
+  from: string;
+  to: string;
+  departDate: string;
+  price: string;
+  previousStage: string;
+  stage: Stage;
+  message: string;
+  notifiedAt: string;
+};
+
 export function isAutomationConfigured() {
   return Boolean(process.env.AUTOMATION_WEBHOOK_URL?.trim());
 }
@@ -39,6 +67,26 @@ function daysSince(iso: string, now: Date) {
   const t = Date.parse(iso);
   if (!Number.isFinite(t)) return 0;
   return Math.floor((now.getTime() - t) / (1000 * 60 * 60 * 24));
+}
+
+function fillTemplate(
+  template: string,
+  booking: Booking
+) {
+  const priceBit = booking.price.trim() ? ` (about $${booking.price.trim()})` : "";
+  const departBit = booking.departDate.trim()
+    ? ` on ${booking.departDate.trim()}`
+    : "";
+  return template
+    .replaceAll("{{name}}", booking.customerName.trim() || "there")
+    .replaceAll("{{from}}", booking.from.trim() || "your city")
+    .replaceAll("{{to}}", booking.to.trim() || "your destination")
+    .replaceAll("{{price}}", priceBit)
+    .replaceAll("{{depart}}", departBit);
+}
+
+export function customerMessageForStage(booking: Booking): string {
+  return fillTemplate(CUSTOMER_STAGE_MESSAGES[booking.stage], booking);
 }
 
 /** Callers still open / waiting on pay for at least N days. */
@@ -92,10 +140,40 @@ export function buildFollowUpDigest(
   };
 }
 
-/**
- * POST digest to Make / Zapier / n8n. No desk button — meant for cron / schedule.
- */
-export async function sendFollowUpDigest(payload: FollowUpDigestPayload): Promise<{
+export function findStageChanges(
+  previous: Booking[],
+  next: Booking[]
+): StageChangedPayload[] {
+  const prevById = new Map(previous.map((b) => [b.id, b]));
+  const changes: StageChangedPayload[] = [];
+
+  for (const booking of next) {
+    const prev = prevById.get(booking.id);
+    if (!prev) continue;
+    if (prev.stage === booking.stage) continue;
+    if (!booking.phone.trim()) continue;
+
+    changes.push({
+      event: "stage_changed",
+      id: booking.id,
+      customerName: booking.customerName,
+      phone: booking.phone,
+      email: booking.email,
+      from: booking.from,
+      to: booking.to,
+      departDate: booking.departDate,
+      price: booking.price,
+      previousStage: prev.stage,
+      stage: booking.stage,
+      message: customerMessageForStage(booking),
+      notifiedAt: new Date().toISOString(),
+    });
+  }
+
+  return changes;
+}
+
+async function postWebhook(payload: unknown): Promise<{
   ok: boolean;
   skipped?: boolean;
   error?: string;
@@ -127,13 +205,31 @@ export async function sendFollowUpDigest(payload: FollowUpDigestPayload): Promis
   }
 }
 
+/** Daily digest → Amira (Make/Zapier). */
+export async function sendFollowUpDigest(payload: FollowUpDigestPayload) {
+  return postWebhook(payload);
+}
+
+/**
+ * When Amira changes a caller’s status, notify the customer via Make/Zapier
+ * (SMS / WhatsApp / email). No separate “send” button — saving the stage is enough.
+ */
+export async function notifyStageChanges(changes: StageChangedPayload[]) {
+  const results = await Promise.all(changes.map((c) => postWebhook(c)));
+  return {
+    attempted: changes.length,
+    sent: results.filter((r) => r.ok).length,
+    skipped: results.filter((r) => r.skipped).length,
+    failed: results.filter((r) => !r.ok && !r.skipped).length,
+  };
+}
+
 export function isAuthorizedAutomationRequest(request: Request) {
   const cronHeader = request.headers.get("x-vercel-cron");
   if (cronHeader === "1") return true;
 
   const secret = process.env.CRON_SECRET?.trim();
   if (!secret) {
-    // Dev / demos without a secret: allow only when webhook is configured locally
     return process.env.NODE_ENV !== "production";
   }
 

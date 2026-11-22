@@ -39,6 +39,12 @@ export async function persistBookings(bookings: Booking[]): Promise<{
   ok: boolean;
   mode: SyncMode;
   error?: string;
+  customerNotify?: {
+    attempted: number;
+    sent: number;
+    skipped: number;
+    failed: number;
+  };
 }> {
   try {
     const res = await fetch("/api/bookings", {
@@ -46,14 +52,23 @@ export async function persistBookings(bookings: Booking[]): Promise<{
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ bookings }),
     });
-    const data = (await res.json()) as { error?: string; mode?: SyncMode };
+    const data = (await res.json()) as {
+      error?: string;
+      mode?: SyncMode;
+      customerNotify?: {
+        attempted: number;
+        sent: number;
+        skipped: number;
+        failed: number;
+      };
+    };
     if (res.status === 503) {
       return { ok: false, mode: "local", error: data.error };
     }
     if (!res.ok) {
       return { ok: false, mode: "unknown", error: data.error || res.statusText };
     }
-    return { ok: true, mode: "cloud" };
+    return { ok: true, mode: "cloud", customerNotify: data.customerNotify };
   } catch (e) {
     return {
       ok: false,

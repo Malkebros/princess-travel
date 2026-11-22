@@ -1,5 +1,9 @@
 import { NextResponse } from "next/server";
-import { isAutomationConfigured } from "@/lib/automation";
+import {
+  findStageChanges,
+  isAutomationConfigured,
+  notifyStageChanges,
+} from "@/lib/automation";
 import { SEED_BOOKINGS } from "@/lib/seed-data";
 import {
   bookingToRow,
@@ -101,12 +105,32 @@ export async function PUT(request: Request) {
   const rows = body.bookings.map(bookingToRow);
   const ids = rows.map((r) => r.id);
 
+  // Load previous rows so we can detect status changes → customer notify
+  const { data: beforeData, error: beforeError } = await supabase
+    .from("bookings")
+    .select("*");
+  if (beforeError) {
+    return NextResponse.json({ error: beforeError.message }, { status: 500 });
+  }
+  const previous = ((beforeData ?? []) as BookingRow[]).map(rowToBooking);
+
   // Replace desk contents: upsert current rows, delete removed ones
   if (rows.length > 0) {
     const { error: upsertError } = await supabase.from("bookings").upsert(rows);
     if (upsertError) {
       return NextResponse.json({ error: upsertError.message }, { status: 500 });
     }
+  }
+
+  const stageChanges = findStageChanges(previous, body.bookings);
+  let customerNotify = {
+    attempted: 0,
+    sent: 0,
+    skipped: 0,
+    failed: 0,
+  };
+  if (stageChanges.length > 0) {
+    customerNotify = await notifyStageChanges(stageChanges);
   }
 
   const { data: existing, error: listError } = await supabase
@@ -147,5 +171,6 @@ export async function PUT(request: Request) {
     ok: true,
     count: rows.length,
     automationEnabled: isAutomationConfigured(),
+    customerNotify,
   });
 }
