@@ -27,6 +27,14 @@ Two automations, both **without a special “Send” button**:
 
 Wrong number → email shows `undefined` and MIME `boundary_…` junk. Body must contain **only** that chip — no extra text.
 
+**To (recipient):** use the caller’s email from the webhook. If Make says `email` is empty, that caller has no email on the card — open the caller → **More** → add an email → save, or in Make use:
+
+```
+{{ifempty(12.email; "your-demo@gmail.com")}}
+```
+
+(replace `12` with your webhook number)
+
 ### Route B — email Amira the daily follow-ups
 - Filter: `event` equals `follow_up_digest`
 - Module: **Email**
