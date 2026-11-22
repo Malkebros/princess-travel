@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { isAutomationConfigured, notifyNewCallers } from "@/lib/automation";
+import { isAutomationConfigured } from "@/lib/automation";
 import { SEED_BOOKINGS } from "@/lib/seed-data";
 import {
   bookingToRow,
@@ -11,8 +11,6 @@ import {
 import type { Booking } from "@/lib/types";
 
 export const runtime = "nodejs";
-
-const SEED_IDS = new Set(SEED_BOOKINGS.map((b) => b.id));
 
 export async function GET() {
   if (!isCloudConfigured()) {
@@ -103,37 +101,12 @@ export async function PUT(request: Request) {
   const rows = body.bookings.map(bookingToRow);
   const ids = rows.map((r) => r.id);
 
-  // Snapshot IDs before save so we can detect brand-new callers
-  const { data: beforeRows, error: beforeError } = await supabase
-    .from("bookings")
-    .select("id");
-  if (beforeError) {
-    return NextResponse.json({ error: beforeError.message }, { status: 500 });
-  }
-  const beforeIds = new Set(
-    ((beforeRows ?? []) as { id: string }[]).map((r) => r.id)
-  );
-
   // Replace desk contents: upsert current rows, delete removed ones
   if (rows.length > 0) {
     const { error: upsertError } = await supabase.from("bookings").upsert(rows);
     if (upsertError) {
       return NextResponse.json({ error: upsertError.message }, { status: 500 });
     }
-  }
-
-  // Automation: new caller saved → webhook (Make / Zapier / n8n) with no button click
-  const newlyCreated = body.bookings.filter(
-    (b) => !beforeIds.has(b.id) && !SEED_IDS.has(b.id)
-  );
-  let automation = {
-    attempted: 0,
-    sent: 0,
-    skipped: 0,
-    failed: 0,
-  };
-  if (newlyCreated.length > 0) {
-    automation = await notifyNewCallers(newlyCreated);
   }
 
   const { data: existing, error: listError } = await supabase
@@ -174,6 +147,5 @@ export async function PUT(request: Request) {
     ok: true,
     count: rows.length,
     automationEnabled: isAutomationConfigured(),
-    automation,
   });
 }

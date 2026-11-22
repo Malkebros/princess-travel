@@ -20,8 +20,8 @@ A simple, phone-friendly **caller & booking desk** (not a public marketing site,
 6. Lock the desk when done (session cookie clears next browser session).
 
 ### Automation (feature completion)
-- When a **new caller** is saved to the cloud desk, the server POSTs JSON to `AUTOMATION_WEBHOOK_URL` (Make / Zapier / n8n).
-- That scenario emails/texts Amira — no button click in the UI.
+- **Follow-up reminders:** daily job finds callers still `open` or `waiting_pay` for N+ days and POSTs a digest to `AUTOMATION_WEBHOOK_URL` (Make / Zapier / n8n emails Amira).
+- Triggered by Vercel Cron (`/api/automation/follow-ups`) — no button in the desk.
 - Setup: `docs/MAKE-AUTOMATION.md`
 
 ### Out of scope unless requested
@@ -30,7 +30,7 @@ Full WhatsApp bots, multi-user logins, custom public domain / Google SEO, Sabre 
 ## Stack
 - Next.js (App Router) + TypeScript + Tailwind + shadcn/ui
 - Supabase Postgres table `bookings` (see `supabase/schema.sql`)
-- Env: `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `DESK_PASSCODE`, `AUTOMATION_WEBHOOK_URL`
+- Env: `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `DESK_PASSCODE`, `AUTOMATION_WEBHOOK_URL`, `CRON_SECRET`, `FOLLOW_UP_AFTER_DAYS`
 - Deployed on Vercel project `princess-travel`
 
 ## Product rules for agents

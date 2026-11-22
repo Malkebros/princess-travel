@@ -1,70 +1,71 @@
-# New-caller alert automation (Make / Zapier / n8n)
+# Follow-up reminder automation (Make / Zapier / n8n)
 
-**What it does:** When Amira (or you) adds a **new caller** in the Princess Travel desk, the server automatically POSTs JSON to a webhook. Make/Zapier/n8n receives it and emails or texts Amira — **no button click**.
+**Point of this automation:** Amira already knows when *she* adds a caller. What she needs is a nudge for callers she’s been meaning to get back to.
 
-## 1. Create the Make scenario (free)
+**What runs (no button click):** Every day, the app finds callers still **open** or **waiting_pay** for 2+ days and sends Amira an email/SMS digest through Make.
 
-1. Sign up / log in at [make.com](https://www.make.com).
-2. **Create a new scenario**.
-3. Add module: **Webhooks → Custom webhook**.
-4. Click **Add** → copy the webhook URL (looks like `https://hook.us1.make.com/...`).
-5. Add a second module: **Email → Send an email** (or Gmail / SMS).
-6. Map fields from the webhook, for example:
+## How it works
 
-   - **To:** Amira’s email (`aboudeeb@sbcglobal.net`)
-   - **Subject:** `New Princess Travel caller: {{customerName}}`
-   - **Body:**
-     ```
-     New caller saved on the desk.
+1. **Vercel Cron** hits `/api/automation/follow-ups` daily at **14:00 UTC** (~8:00 AM Chicago in winter).  
+2. Or **Make Schedule** can call that same URL (good for class demos).  
+3. The app builds a digest and POSTs it to `AUTOMATION_WEBHOOK_URL`.  
+4. Make emails/texts Amira the list.
 
-     Name: {{customerName}}
-     Phone: {{phone}}
-     Route: {{from}} → {{to}}
-     Depart: {{departDate}}
-     Notes: {{notes}}
-     ```
+## 1. Create the Make scenario
 
-7. Turn the scenario **ON**.
+1. Open [make.com](https://www.make.com) → **Create a new scenario**.
+2. Module 1: **Webhooks → Custom webhook** → copy the URL.
+3. Module 2: **Email → Send an email** (or Gmail).
+4. Map:
+   - **To:** Amira’s email  
+   - **Subject:** `Princess Travel follow-ups ({{count}})`  
+   - **Body:** `{{summary}}`  
+5. Turn the scenario **ON**.
 
-## 2. Add the webhook URL to the app
+### Optional: Make also triggers the check (for your demo video)
 
-Set this environment variable (local `.env.local` **and** Vercel → Project → Environment Variables):
+Add a second scenario (or first module):
+
+1. **Scheduler → Every day** (e.g. 8:00 AM)  
+2. **HTTP → Make a request**  
+   - URL: `https://princess-travel-malkebros.vercel.app/api/automation/follow-ups?secret=YOUR_CRON_SECRET`  
+   - Method: GET  
+3. Then your webhook module receives the digest the app posts (or parse the HTTP response).
+
+## 2. Env vars (local + Vercel)
 
 ```bash
 AUTOMATION_WEBHOOK_URL=https://hook.us1.make.com/YOUR_HOOK_ID
+CRON_SECRET=pick-a-long-random-string
+FOLLOW_UP_AFTER_DAYS=2
 ```
 
-Redeploy Vercel after saving.
+Redeploy after saving on Vercel.
 
-## 3. Demo / test
+## 3. Demo for class (2–3 min video)
 
-1. Open the live desk and unlock.
-2. Confirm the header shows **New-caller alerts on**.
-3. Tap **New caller**, enter a name + phone, save.
-4. Within a few seconds, Amira should get the email/SMS from Make.
-5. Record that for your 2–3 minute assignment video.
+1. In the desk, leave (or set) a caller on **Open** or **Waiting pay** with an older “updated” time, or temporarily set `FOLLOW_UP_AFTER_DAYS=0` for the demo.  
+2. Hit the follow-up URL once (or wait for cron).  
+3. Show Amira’s email/SMS arriving with the digest — **you didn’t click Send in the desk**.
 
-## Webhook payload (JSON)
+## Webhook payload
 
 ```json
 {
-  "event": "new_caller",
-  "id": "bk-…",
-  "customerName": "Layla Mansour",
-  "phone": "3125550198",
-  "from": "ORD",
-  "to": "BEY",
-  "departDate": "2026-11-05",
-  "returnDate": "",
-  "passengers": "1",
-  "stage": "open",
-  "notes": "…",
-  "nextAction": "",
-  "createdAt": "…",
-  "notifiedAt": "…"
+  "event": "follow_up_digest",
+  "count": 2,
+  "daysThreshold": 2,
+  "callers": [
+    {
+      "id": "bk-…",
+      "customerName": "Hassan Farouk",
+      "phone": "7735550142",
+      "stage": "waiting_pay",
+      "daysStale": 5,
+      "nextAction": "Collect payment Saturday"
+    }
+  ],
+  "summary": "Princess Travel follow-ups (2):\n• …",
+  "generatedAt": "…"
 }
 ```
-
-## Zapier / n8n
-
-Same idea: **Catch Hook** (Zapier) or **Webhook** (n8n) → Email/SMS module. Paste that hook URL into `AUTOMATION_WEBHOOK_URL`.

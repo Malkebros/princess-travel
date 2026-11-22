@@ -53,7 +53,6 @@ export function DeskApp() {
   const [syncMode, setSyncMode] = useState<SyncMode>("unknown");
   const [syncLabel, setSyncLabel] = useState("Loading…");
   const [automationEnabled, setAutomationEnabled] = useState(false);
-  const [automationNote, setAutomationNote] = useState("");
   const searchRef = useRef<HTMLInputElement>(null);
   const skipNextPersist = useRef(true);
   const lang = "en" as const;
@@ -135,20 +134,6 @@ export function DeskApp() {
       void persistBookings(bookings).then((result) => {
         if (result.ok) {
           setSyncLabel("Saved in the cloud — works on phone & computer");
-          const auto = result.automation;
-          if (auto && auto.attempted > 0) {
-            if (auto.sent > 0) {
-              setAutomationNote(
-                `New-caller alert sent (${auto.sent}) — check Amira’s email/phone`
-              );
-            } else if (auto.skipped > 0) {
-              setAutomationNote(
-                "New caller saved — connect Make webhook to send alerts"
-              );
-            } else if (auto.failed > 0) {
-              setAutomationNote("New-caller alert failed — check webhook URL");
-            }
-          }
         } else if (result.mode === "local") {
           setSyncMode("local");
           setSyncLabel("Cloud unavailable — saving on this device only");
@@ -304,10 +289,9 @@ export function DeskApp() {
                 >
                   <Bell className="mt-0.5 size-4 shrink-0" />
                   <span>
-                    {automationNote ||
-                      (automationEnabled
-                        ? "New-caller alerts on — Make/Zapier runs automatically"
-                        : "New-caller alerts off — add AUTOMATION_WEBHOOK_URL")}
+                    {automationEnabled
+                      ? "Follow-up reminders on — daily alert for open / waiting pay"
+                      : "Follow-up reminders off — add AUTOMATION_WEBHOOK_URL"}
                   </span>
                 </p>
               </div>
