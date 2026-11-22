@@ -47,6 +47,11 @@ export async function persistBookings(bookings: Booking[]): Promise<{
     skippedNoEmail?: number;
     stageChanged?: number;
     messages?: string[];
+    sentDetails?: {
+      customerName: string;
+      stage: string;
+      message: string;
+    }[];
   };
 }> {
   try {
@@ -66,6 +71,11 @@ export async function persistBookings(bookings: Booking[]): Promise<{
         skippedNoEmail?: number;
         stageChanged?: number;
         messages?: string[];
+        sentDetails?: {
+          customerName: string;
+          stage: string;
+          message: string;
+        }[];
       };
     };
     if (res.status === 503) {

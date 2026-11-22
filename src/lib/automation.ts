@@ -234,12 +234,21 @@ export async function sendFollowUpDigest(payload: FollowUpDigestPayload) {
  */
 export async function notifyStageChanges(changes: StageChangedPayload[]) {
   const results = await Promise.all(changes.map((c) => postWebhook(c)));
+  const sentDetails = changes
+    .map((c, i) => ({ change: c, result: results[i] }))
+    .filter((row) => row.result.ok)
+    .map(({ change }) => ({
+      customerName: change.customerName,
+      stage: change.stage,
+      message: change.message,
+    }));
   return {
     attempted: changes.length,
     sent: results.filter((r) => r.ok).length,
     skipped: results.filter((r) => r.skipped).length,
     failed: results.filter((r) => !r.ok && !r.skipped).length,
     messages: changes.map((c) => c.message),
+    sentDetails,
   };
 }
 

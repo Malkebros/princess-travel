@@ -26,9 +26,7 @@ export function BookingDetail({
   lang: Lang;
   onBack?: () => void;
 }) {
-  const [showMore, setShowMore] = useState(
-    Boolean(booking.email || booking.price)
-  );
+  const [showMore, setShowMore] = useState(Boolean(booking.price));
 
   function patch(partial: Partial<Booking>) {
     onChange({ ...booking, ...partial });
@@ -125,6 +123,18 @@ export function BookingDetail({
               inputMode="tel"
             />
           </Field>
+          <Field label={t(lang, "email")}>
+            <Input
+              className={fieldClass}
+              value={booking.email}
+              onChange={(e) => patch({ email: e.target.value })}
+              type="email"
+              inputMode="email"
+              autoComplete="email"
+              required
+              placeholder="needed for status emails"
+            />
+          </Field>
           <Field label={t(lang, "from")}>
             <Input
               className={fieldClass}
@@ -198,15 +208,6 @@ export function BookingDetail({
           </button>
           {showMore ? (
             <div className="mt-3 grid gap-3 sm:grid-cols-2">
-              <Field label={t(lang, "email")}>
-                <Input
-                  className={fieldClass}
-                  value={booking.email}
-                  onChange={(e) => patch({ email: e.target.value })}
-                  type="email"
-                  required
-                />
-              </Field>
               <Field label={`${t(lang, "price")} (${t(lang, "optional")})`}>
                 <Input
                   className={fieldClass}

@@ -58,9 +58,17 @@ export function DeskApp() {
   const [automationEnabled, setAutomationEnabled] = useState(false);
   const [automationNote, setAutomationNote] = useState("");
   const [automationLog, setAutomationLog] = useState<AutomationLogEntry[]>([]);
+  const [toast, setToast] = useState<string | null>(null);
   const searchRef = useRef<HTMLInputElement>(null);
   const skipNextPersist = useRef(true);
+  const toastTimer = useRef<number | null>(null);
   const lang = "en" as const;
+
+  function showToast(message: string) {
+    setToast(message);
+    if (toastTimer.current) window.clearTimeout(toastTimer.current);
+    toastTimer.current = window.setTimeout(() => setToast(null), 4500);
+  }
 
   async function lockDesk() {
     try {
@@ -116,6 +124,7 @@ export function DeskApp() {
     void boot();
     return () => {
       cancelled = true;
+      if (toastTimer.current) window.clearTimeout(toastTimer.current);
     };
   }, []);
 
@@ -143,19 +152,27 @@ export function DeskApp() {
           const n = result.customerNotify;
           if (n && (n.attempted > 0 || (n.stageChanged ?? 0) > 0)) {
             if (n.sent > 0) {
-              const msg = n.messages?.[0];
+              const detail = n.sentDetails?.[0];
+              const msg = detail?.message || n.messages?.[0];
+              const who = detail?.customerName?.trim() || "customer";
+              const stageTxt = detail?.stage
+                ? stageLabel(lang, detail.stage)
+                : "status update";
+              const toastMsg = `Emailed ${who} — ${stageTxt}`;
               setAutomationNote(
-                `Customer email sent (${n.sent}) — check inbox/spam`
+                `${toastMsg}. Check inbox/spam if you don’t see it.`
               );
+              showToast(toastMsg);
               pushAutomationLog({
-                summary: `Sent ${n.sent} customer email(s) via Make`,
+                summary: toastMsg,
                 message: msg,
               });
               setAutomationLog(loadAutomationLog());
             } else if ((n.skippedNoEmail ?? 0) > 0) {
               setAutomationNote(
-                "Status saved — add email on the caller (More) to notify them"
+                "Status saved — add email on the caller to notify them"
               );
+              showToast("Add email on the caller to send a status email");
               pushAutomationLog({
                 summary: "Status changed — skipped (caller has no email)",
               });
@@ -166,6 +183,7 @@ export function DeskApp() {
               );
             } else if (n.failed > 0) {
               setAutomationNote("Customer notify failed — check webhook URL");
+              showToast("Customer email failed — check Make");
               pushAutomationLog({
                 summary: "Customer notify failed — check Make webhook",
               });
@@ -286,6 +304,16 @@ export function DeskApp() {
 
   return (
     <div className="min-h-screen pb-24 lg:pb-0">
+      {toast ? (
+        <div
+          role="status"
+          className="fixed inset-x-0 top-0 z-50 flex justify-center px-4 pt-4 pointer-events-none"
+        >
+          <div className="pointer-events-auto max-w-lg rounded-2xl border border-[var(--pt-teal)] bg-[var(--pt-teal)] px-4 py-3 text-center text-base font-medium text-white shadow-lg">
+            {toast}
+          </div>
+        </div>
+      ) : null}
       <header className="relative overflow-hidden border-b border-[var(--pt-line)]">
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_80%_70%_at_10%_0%,#cfe6ef_0%,transparent_55%),radial-gradient(ellipse_60%_50%_at_100%_10%,#f3e6c0_0%,transparent_45%),linear-gradient(180deg,#f7fbfd_0%,#ffffff_100%)]" />
         <div className="relative mx-auto flex max-w-7xl flex-col gap-4 px-4 py-5 sm:px-6 lg:px-8">
