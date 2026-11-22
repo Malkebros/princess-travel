@@ -10,8 +10,8 @@ Save names, phones, trips, status, and what to do next. Sabre stays in Sabre —
 - Search by name or phone  
 - Tap a **phone number** or **Call** to dial (works on iPhone)  
 - **WhatsApp** button on each caller  
-- New caller starts with name + phone only  
-- Email & price tucked under “More”  
+- New caller requires name + phone + **email** (for status emails via Make)  
+- Price tucked under “More”  
 - **Shared cloud save** (Supabase) so computer + iPhone see the same callers  
 - **Desk passcode** (optional) so strangers with the link can’t open it — no Vercel login  
 - **Customer status texts** — change a caller’s stage and Make/Zapier can SMS/WhatsApp them automatically  

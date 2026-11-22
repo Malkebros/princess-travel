@@ -32,6 +32,7 @@ export function NewBookingDialog({
 }) {
   const [customerName, setCustomerName] = useState("");
   const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
   const [showTrip, setShowTrip] = useState(false);
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
@@ -44,6 +45,7 @@ export function NewBookingDialog({
   function reset() {
     setCustomerName("");
     setPhone("");
+    setEmail("");
     setShowTrip(false);
     setFrom("");
     setTo("");
@@ -55,17 +57,24 @@ export function NewBookingDialog({
   }
 
   function submit() {
-    if (!customerName.trim() || !phone.trim()) {
+    if (!customerName.trim() || !phone.trim() || !email.trim()) {
       setError(
         lang === "ar"
-          ? "الاسم والهاتف مطلوبان."
-          : "Name and phone are required."
+          ? "الاسم والهاتف والبريد مطلوبون."
+          : "Name, phone, and email are required."
+      );
+      return;
+    }
+    if (!email.trim().includes("@")) {
+      setError(
+        lang === "ar" ? "أدخلي بريداً صالحاً." : "Enter a valid email."
       );
       return;
     }
     onCreate({
       customerName: customerName.trim(),
       phone: phone.trim(),
+      email: email.trim(),
       from: from.trim().toUpperCase(),
       to: to.trim().toUpperCase(),
       departDate,
@@ -116,6 +125,18 @@ export function NewBookingDialog({
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               inputMode="tel"
+            />
+          </Field>
+          <Field label={t(lang, "email")} htmlFor="nb-email">
+            <Input
+              id="nb-email"
+              className={fieldClass}
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              type="email"
+              inputMode="email"
+              autoComplete="email"
+              required
             />
           </Field>
 

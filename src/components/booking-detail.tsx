@@ -193,12 +193,13 @@ export function BookingDetail({
           </button>
           {showMore ? (
             <div className="mt-3 grid gap-3 sm:grid-cols-2">
-              <Field label={`${t(lang, "email")} (${t(lang, "optional")})`}>
+              <Field label={t(lang, "email")}>
                 <Input
                   className={fieldClass}
                   value={booking.email}
                   onChange={(e) => patch({ email: e.target.value })}
                   type="email"
+                  required
                 />
               </Field>
               <Field label={`${t(lang, "price")} (${t(lang, "optional")})`}>

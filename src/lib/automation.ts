@@ -155,7 +155,8 @@ export function findStageChanges(
     const prev = prevById.get(booking.id);
     if (!prev) continue;
     if (prev.stage === booking.stage) continue;
-    if (!booking.phone.trim()) continue;
+    // Customer email notify needs an address (Make Gmail To)
+    if (!booking.email.trim()) continue;
 
     const message = customerMessageForStage(booking);
     changes.push({
