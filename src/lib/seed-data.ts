@@ -71,3 +71,11 @@ export const SEED_BOOKINGS: Booking[] = [
     updatedAt: "2026-10-11T20:10:00.000Z",
   },
 ];
+
+export const SEED_BOOKING_IDS = new Set(SEED_BOOKINGS.map((b) => b.id));
+
+export function isSeedBooking(booking: Pick<Booking, "id" | "email">) {
+  if (SEED_BOOKING_IDS.has(booking.id)) return true;
+  // Extra safety for renamed sample rows still using fake domains
+  return booking.email.trim().toLowerCase().endsWith("@example.com");
+}

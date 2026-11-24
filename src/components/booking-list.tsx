@@ -12,16 +12,18 @@ export function BookingList({
   selectedId,
   onSelect,
   lang,
+  emptyMessage,
 }: {
   bookings: Booking[];
   selectedId: string | null;
   onSelect: (id: string) => void;
   lang: Lang;
+  emptyMessage?: string;
 }) {
   if (bookings.length === 0) {
     return (
       <div className="rounded-2xl border border-dashed border-[var(--pt-line)] bg-white/70 px-4 py-10 text-center text-base text-muted-foreground">
-        {t(lang, "noMatch")}
+        {emptyMessage || t(lang, "noMatch")}
       </div>
     );
   }

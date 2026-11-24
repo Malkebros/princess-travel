@@ -7,7 +7,7 @@ import { NewBookingDialog } from "@/components/new-booking-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { SEED_BOOKINGS } from "@/lib/seed-data";
+import { isSeedBooking, SEED_BOOKINGS } from "@/lib/seed-data";
 import {
   fetchBookings,
   persistBookings,
@@ -20,7 +20,12 @@ import {
   stageLabel,
   t,
 } from "@/lib/i18n";
-import { STAGES, type Booking, type Stage } from "@/lib/types";
+import {
+  STAGE_LIST_PRIORITY,
+  STAGES,
+  type Booking,
+  type Stage,
+} from "@/lib/types";
 import {
   digitsOnly,
   emptyBooking,
@@ -234,10 +239,14 @@ export function DeskApp() {
           : false;
         return hay.includes(q) || phoneHit;
       })
-      .sort(
-        (a, b) =>
+      .sort((a, b) => {
+        const byStage =
+          STAGE_LIST_PRIORITY[a.stage] - STAGE_LIST_PRIORITY[b.stage];
+        if (byStage !== 0) return byStage;
+        return (
           new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
-      );
+        );
+      });
   }, [bookings, query, stageFilter]);
 
   const selected =
@@ -284,6 +293,21 @@ export function DeskApp() {
     setQuery("");
     setStageFilter("all");
     setMobileShowDetail(false);
+  }
+
+  function clearSampleCallers() {
+    if (!window.confirm(t(lang, "clearDemosConfirm"))) return;
+    const next = bookings.filter((b) => !isSeedBooking(b));
+    setBookings(next);
+    setSelectedId(next[0]?.id ?? null);
+    setQuery("");
+    setStageFilter("all");
+    setMobileShowDetail(false);
+    showToast(
+      next.length === 0
+        ? "Sample callers cleared — desk is empty"
+        : `Removed samples — ${next.length} real caller(s) kept`
+    );
   }
 
   function createBooking(partial: Partial<Booking>) {
@@ -404,6 +428,13 @@ export function DeskApp() {
               <Button
                 variant="outline"
                 className="h-11 bg-white/70 text-base"
+                onClick={clearSampleCallers}
+              >
+                {t(lang, "clearDemos")}
+              </Button>
+              <Button
+                variant="outline"
+                className="h-11 bg-white/70 text-base"
                 onClick={() => void resetDemo()}
               >
                 <RotateCcw data-icon="inline-start" />
@@ -463,6 +494,9 @@ export function DeskApp() {
             selectedId={selected?.id ?? null}
             onSelect={selectCaller}
             lang={lang}
+            emptyMessage={
+              bookings.length === 0 ? t(lang, "emptyDesk") : undefined
+            }
           />
         </section>
 

@@ -13,6 +13,8 @@ Save names, phones, trips, status, and what to do next. Sabre stays in Sabre —
 - New caller requires name + phone + **email** (for status emails via Make)  
 - Email stays on the main caller form; price under “More”  
 - Clear toast when a status email is sent (“Emailed Hassan — Waiting for pay”)  
+- Caller list puts waiting-pay / open / problem first  
+- **Clear sample callers** removes demo data and keeps real callers  
 - **Shared cloud save** (Supabase) so computer + iPhone see the same callers  
 - **Desk passcode** (optional) so strangers with the link can’t open it — no Vercel login  
 - **Customer status texts** — change a caller’s stage and Make/Zapier can SMS/WhatsApp them automatically  
