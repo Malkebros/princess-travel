@@ -17,7 +17,7 @@ A simple, phone-friendly **caller & booking desk** (not a public marketing site,
 3. Add / edit a caller: name, phone, from/to, dates, passengers, price, status, notes, next action.
 4. Save to **Supabase** so computer and iPhone share the same data.
 5. From a caller card: **Call**, **Text**, **WhatsApp**, or **Add contact** (iPhone vCard).
-6. Lock the desk when done (session cookie clears next browser session).
+6. Opening the live link always shows the unlock screen (fresh visits clear the unlock cookie). Lock desk anytime from the header.
 
 ### Automation (feature completion)
 - **Customer stage notify:** when Amira changes a caller’s status, the desk POSTs `stage_changed` to `AUTOMATION_WEBHOOK_URL` with a ready-made SMS/WhatsApp message for that stage (Make texts the customer). Saving the status is enough — no Send button.

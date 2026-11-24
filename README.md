@@ -49,7 +49,7 @@ Vercel’s built-in password wall needs a paid plan. This app uses a simple shar
 
 1. Set `DESK_PASSCODE` in `.env.local` and in Vercel env vars.  
 2. Redeploy.  
-3. Opening the site shows an unlock screen. Unlock lasts for the browser session only (and she can tap **Lock desk** anytime).
+3. Opening the site link **always** shows the unlock screen (fresh visits clear any prior unlock). After unlock, use the desk normally; tap **Lock desk** anytime.
 
 If `DESK_PASSCODE` is empty, the lock is off.
 
